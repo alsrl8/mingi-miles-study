@@ -1,0 +1,35 @@
+name: Learning inbox
+description: Capture a public learning note when the repository is not available locally.
+title: "[Learning] "
+labels:
+  - inbox
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Record only material that is safe to publish. Generalize work experience
+        and exclude customer data, private messages, internal locations, and credentials.
+
+  - type: textarea
+    id: observation
+    attributes:
+      label: What did you learn?
+      description: State the observation in your own words.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: What supports it?
+      description: Add public sources or describe direct experience without private details.
+    validations:
+      required: true
+
+  - type: textarea
+    id: retrieval
+    attributes:
+      label: What should you be able to answer later?
+      description: Write one question that tests recall or application.
+    validations:
+      required: true

@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+die() {
+  printf 'error: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  scripts/learn capture <title> [body]
+  scripts/learn distill <inbox-file> <topic-title>
+  scripts/learn issue <title> [body]
+  scripts/learn sync
+  scripts/learn status
+EOF
+}
+
+slugify() {
+  local value="$1"
+  local slug
+  slug="$(
+    printf '%s' "$value" |
+      LC_ALL=C tr '[:upper:]' '[:lower:]' |
+      sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' |
+      cut -c1-60
+  )"
+  if [[ -z "$slug" ]]; then
+    slug="note"
+  fi
+  printf '%s' "$slug"
+}
+
+yaml_quote() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+require_git_repo() {
+  git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
+    die "not inside a Git repository"
+}
+
+validate() {
+  python3 "$repo_root/scripts/validate.py"
+}
+
+capture() {
+  [[ $# -ge 1 && $# -le 2 ]] || die "capture requires a title and optional body"
+
+  local title="$1"
+  local body="${2:-$1}"
+  local day_path timestamp device device_slug slug note_id note_dir note_path
+
+  day_path="$(date '+%Y/%m')"
+  timestamp="$(date -u '+%Y%m%dT%H%M%SZ')"
+  device="$(hostname -s 2>/dev/null || hostname)"
+  device_slug="$(slugify "$device")"
+  slug="$(slugify "$title")"
+  note_id="${timestamp}-${device_slug}-$$"
+  note_dir="$repo_root/inbox/$day_path"
+  note_path="$note_dir/${note_id}-${slug}.md"
+
+  mkdir -p "$note_dir"
+  {
+    printf '%s\n' '---'
+    printf 'id: %s\n' "$note_id"
+    printf 'created: %s\n' "$(date '+%Y-%m-%d')"
+    printf '%s\n' 'status: inbox'
+    printf '%s\n' 'tags: []'
+    printf '%s\n' 'source: direct-experience'
+    printf '%s\n' 'visibility: public'
+    printf '%s\n\n' '---'
+    printf '# %s\n\n' "$title"
+    printf '%s\n' "$body"
+  } >"$note_path"
+
+  validate >/dev/null
+  printf '%s\n' "${note_path#"$repo_root/"}"
+}
+
+distill() {
+  [[ $# -eq 2 ]] || die "distill requires an inbox file and topic title"
+  require_git_repo
+
+  local source_arg="$1"
+  local title="$2"
+  local source_path source_rel slug topic_path branch note_id
+
+  if [[ "$source_arg" = /* ]]; then
+    source_path="$source_arg"
+  else
+    source_path="$repo_root/$source_arg"
+  fi
+
+  [[ -f "$source_path" ]] || die "source note does not exist: $source_arg"
+  source_rel="${source_path#"$repo_root/"}"
+  [[ "$source_rel" == inbox/* ]] || die "source note must be under inbox/"
+  [[ -z "$(git -C "$repo_root" status --porcelain)" ]] ||
+    die "commit or sync current changes before distilling"
+
+  slug="$(slugify "$title")"
+  topic_path="$repo_root/topics/$slug.md"
+  [[ ! -e "$topic_path" ]] || die "topic already exists: topics/$slug.md"
+
+  branch="study/${slug}-$(date -u '+%Y%m%d%H%M%S')"
+  git -C "$repo_root" switch -c "$branch"
+  note_id="topic-$(date -u '+%Y%m%dT%H%M%SZ')-${slug}"
+
+  {
+    printf '%s\n' '---'
+    printf 'id: %s\n' "$note_id"
+    printf 'created: %s\n' "$(date '+%Y-%m-%d')"
+    printf '%s\n' 'status: distilled'
+    printf '%s\n' 'tags: []'
+    printf 'source: %s\n' "$source_rel"
+    printf '%s\n' 'visibility: public'
+    printf '%s\n\n' '---'
+    printf '# %s\n\n' "$title"
+    printf 'This topic was distilled from [%s](../%s).\n\n' \
+      "$(basename "$source_rel" .md)" "$source_rel"
+    sed -n '/^---$/,$p' "$source_path" | sed '1,/^---$/d'
+  } >"$topic_path"
+
+  validate >/dev/null
+  printf 'created %s on branch %s\n' "${topic_path#"$repo_root/"}" "$branch"
+  printf 'refine the topic, run scripts/learn sync, then open a pull request\n'
+}
+
+issue() {
+  [[ $# -ge 1 && $# -le 2 ]] || die "issue requires a title and optional body"
+  command -v gh >/dev/null 2>&1 || die "gh is required"
+
+  local title="$1"
+  local body="${2:-$1}"
+  gh issue create \
+    --repo alsrl8/mingi-miles-study \
+    --label inbox \
+    --title "$title" \
+    --body "$body"
+}
+
+sync_repo() {
+  require_git_repo
+
+  local branch
+  branch="$(git -C "$repo_root" symbolic-ref --quiet --short HEAD)" ||
+    die "detached HEAD is not supported"
+
+  if git -C "$repo_root" remote get-url origin >/dev/null 2>&1; then
+    git -C "$repo_root" fetch origin
+    if git -C "$repo_root" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+      git -C "$repo_root" rebase --autostash "origin/$branch"
+    fi
+  fi
+
+  validate
+
+  if [[ -n "$(git -C "$repo_root" status --porcelain)" ]]; then
+    git -C "$repo_root" add --all
+    git -C "$repo_root" commit -m "learn: sync $(date '+%Y-%m-%d %H:%M')"
+  else
+    printf '%s\n' 'nothing to commit'
+  fi
+
+  if git -C "$repo_root" remote get-url origin >/dev/null 2>&1; then
+    if git -C "$repo_root" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+      git -C "$repo_root" push origin "$branch"
+    else
+      git -C "$repo_root" push --set-upstream origin "$branch"
+    fi
+  else
+    printf '%s\n' 'no origin remote; local commit is ready'
+  fi
+}
+
+status_repo() {
+  require_git_repo
+  printf 'branch: %s\n' "$(git -C "$repo_root" branch --show-current)"
+  printf '%s\n' 'working tree:'
+  git -C "$repo_root" status --short
+  printf '%s\n' 'latest commit:'
+  git -C "$repo_root" log -1 --oneline 2>/dev/null || printf '%s\n' '(none)'
+  printf '%s\n' 'origin:'
+  git -C "$repo_root" remote get-url origin 2>/dev/null || printf '%s\n' '(none)'
+}
+
+main() {
+  [[ $# -ge 1 ]] || {
+    usage
+    exit 1
+  }
+
+  local command="$1"
+  shift
+
+  case "$command" in
+    capture) capture "$@" ;;
+    distill) distill "$@" ;;
+    issue) issue "$@" ;;
+    sync) [[ $# -eq 0 ]] || die "sync takes no arguments"; sync_repo ;;
+    status) [[ $# -eq 0 ]] || die "status takes no arguments"; status_repo ;;
+    -h | --help | help) usage ;;
+    *) usage; die "unknown command: $command" ;;
+  esac
+}
+
+main "$@"
