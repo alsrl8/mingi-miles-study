@@ -20,12 +20,19 @@ the human-facing workflow.
 
 ## Skillset
 
-The current implementation exposes the following capabilities through
-`scripts/learn` and `scripts/validate.py`. An agent may wrap these commands as
-local skills or implement equivalent skills in another runtime.
+The portable Codex skill is
+`.agents/skills/continue-study/SKILL.md`. It coordinates orientation, teaching,
+progressive assignments, assessment, correction, delayed review, checkpointing,
+and synchronization. Read its `references/learning-model.md` before making
+learning-state decisions.
+
+The repository also exposes the following lower-level capabilities through
+`scripts/learn` and `scripts/validate.py`. Another runtime may implement
+equivalent skills as long as it preserves the contracts below.
 
 | Recommended skill | Current command | Responsibility |
 | --- | --- | --- |
+| `continue-study` | portable agent skill | Run the complete concept-to-review learning cycle from repository evidence |
 | `study-orient` | repository conventions | Reconstruct the current learning subject, recent progress, unresolved questions, and next action |
 | `study-status` | `scripts/learn status` | Show the active branch, local changes, latest commit, and origin |
 | `study-capture` | `scripts/learn capture` | Create one public inbox note with a collision-resistant ID |
@@ -63,15 +70,43 @@ Content belongs in one of these areas:
 
 - `inbox/`: one observation per file, created without modifying another note.
 - `topics/`: reusable explanations that make sense without conversation history.
+- `curriculum/`: learning goals, prerequisite graph, order, and advancement
+  evidence.
+- `lessons/`: bounded explanations, worked examples, misconceptions, and recall
+  checks that refer to canonical topics.
+- `assignments/`: one guided, faded, independent, or transfer practice
+  definition per file.
+- `assessments/`: questions, rubrics, variants, and correction routes, separate
+  from learner attempts.
 - `reviews/questions/`: questions and answers for retrieval practice.
 - `reviews/weekly/`: dated reflection on changed understanding.
 - `maps/`: links between canonical topic notes.
+- Progress store: private per-user attempts, raw answers, scores, hints, review
+  due dates, and detailed UI events.
 
 Use `maps/progress.md` as the current learning checkpoint when an agent adds a
 progress capability. Keep only the current state there; preserve chronological
 learning events as separate notes in `inbox/` and dated reviews.
 
-Every content note other than a directory `README.md` begins with:
+The source-of-truth boundary is strict: `topics/` owns durable explanations;
+the curriculum owns order; lessons own teaching flow; assignments and
+assessments own their definitions; the progress store owns detailed attempts;
+and `maps/progress.md` owns only the concise current handoff. Link across these
+layers instead of copying them.
+
+Contract details and filled examples are available in:
+
+- `curriculum/README.md`
+- `lessons/README.md`
+- `assignments/README.md`
+- `assessments/README.md`
+- `templates/lesson.md`
+- `templates/assignment.md`
+- `templates/assignment-independent.md`
+- `templates/assessment.json`
+- `templates/progress.md`
+
+Every Markdown content note other than a directory `README.md` begins with:
 
 ```yaml
 ---
@@ -83,6 +118,10 @@ source: direct-experience
 visibility: public
 ---
 ```
+
+Assessment definitions are the exception to the frontmatter syntax: they use
+JSON and carry the same `id`, `created`, `status`, `tags`, `source`, and
+`visibility` fields as top-level properties.
 
 An equivalent implementation must preserve these fields:
 
@@ -356,6 +395,25 @@ Every skill must reject or stop for material containing:
 Convert concrete work experience into a general lesson before capture. Preserve
 public source attribution. When publication safety is ambiguous, do not write or
 push the material; ask Miles.
+
+## Web UI implementation
+
+Read `.agents/skills/continue-study/references/web-ui.md` and start from
+`.agents/skills/continue-study/assets/web-ui-template/`. The example implements
+the same learning stages used by agents. Its JSON files are deliberately small
+presentation projections, not replacements for the canonical repository
+contracts. The build-time adapter must read canonical lesson, assignment, and
+assessment definitions, validate their full contracts, and map only the fields
+needed for display. Omitted fields such as allowed resources, complete rubrics,
+answer keys, corrective routes, reassessment variants, and review schedules
+remain canonical data and must not be discarded by persistence or authoring
+flows.
+
+The development adapter may store progress in the current browser only. Never
+describe that state as cross-device synchronization. A cross-device
+implementation requires authenticated storage, per-user authorization, and a
+generated repository checkpoint based on verified progress. Public definitions
+remain in Git; detailed attempts do not become public commits.
 
 ## How to implement this skillset elsewhere
 

@@ -1,0 +1,20 @@
+{
+  "id": "assignment-git-state-guided-001",
+  "lessonId": "lesson-git-working-tree-001",
+  "mode": "guided",
+  "title": "안내를 따라 첫 적용을 해봅니다",
+  "prompt": "practice.md와 answer.md를 수정했고 practice.md만 commit해야 합니다. 아래 순서대로 각 명령의 목적을 한 문장으로 설명해 보세요.",
+  "steps": [
+    "git status --short로 변경된 파일을 확인한다.",
+    "git add practice.md로 이번 기록의 범위를 선택한다.",
+    "git diff --cached로 선택한 변경을 검토한다.",
+    "git commit -m \"Complete guided practice\"로 기록한다."
+  ],
+  "hint": "git add 뒤에 파일 이름을 쓰는 이유를 선택이라는 단어로 설명해 보세요.",
+  "success": "각 단계에서 working tree, staging area, commit 중 무엇을 읽거나 바꾸는지 구분한다.",
+  "constraints": [
+    "한 번에 한 힌트만 확인한다.",
+    "각 명령의 목적을 자신의 말로 설명한다."
+  ],
+  "artifact": "명령 순서와 각 단계의 목적을 담은 짧은 답안"
+}

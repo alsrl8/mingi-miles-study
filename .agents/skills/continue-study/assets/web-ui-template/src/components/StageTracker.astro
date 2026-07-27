@@ -1,0 +1,116 @@
+---
+import { lessonStageDescriptors } from '../lib/progress';
+
+interface Props {
+  lessonId: string;
+}
+
+const { lessonId } = Astro.props;
+---
+
+<div class="stage-tracker" data-progress-tracker data-lesson-id={lessonId}>
+  <div class="tracker-head">
+    <div>
+      <span class="kicker">현재 진도</span>
+      <strong data-progress-label>
+        0 / {lessonStageDescriptors.length} 단계
+      </strong>
+    </div>
+    <button class="text-button" type="button" data-reset-progress>초기화</button>
+  </div>
+  <div class="progress-bar" aria-hidden="true">
+    <span data-progress-bar></span>
+  </div>
+  <ol>
+    {lessonStageDescriptors.map((stage, index) => (
+      <li data-stage-item={stage.id}>
+        <span>{index + 1}</span>
+        {stage.label}
+      </li>
+    ))}
+  </ol>
+  <p class="local-note">
+    이 진도는 개발 확인용으로 현재 브라우저에만 남습니다. 다른 기기와
+    동기화되지 않습니다.
+  </p>
+  <p class="storage-warning" data-storage-warning hidden>
+    브라우저 저장소를 사용할 수 없어 이 탭에서만 진도가 유지됩니다.
+  </p>
+</div>
+
+<script>
+  import {
+    isLessonStage,
+    lessonStageDescriptors,
+  } from '../lib/progress';
+  import { progressAdapter } from '../lib/active-progress';
+
+  const trackers = document.querySelectorAll<HTMLElement>(
+    '[data-progress-tracker]',
+  );
+
+  trackers.forEach((tracker) => {
+    const lessonId = tracker.dataset.lessonId;
+    if (!lessonId) return;
+
+    const render = () => {
+      const { progress, persisted } = progressAdapter.read(lessonId);
+      const count = progress.completedStages.length;
+      const label = tracker.querySelector<HTMLElement>('[data-progress-label]');
+      const bar = tracker.querySelector<HTMLElement>('[data-progress-bar]');
+      const warning = tracker.querySelector<HTMLElement>(
+        '[data-storage-warning]',
+      );
+
+      if (label) {
+        label.textContent =
+          `${count} / ${lessonStageDescriptors.length} 단계`;
+      }
+      if (bar) {
+        bar.style.width =
+          `${(count / lessonStageDescriptors.length) * 100}%`;
+      }
+      if (warning) warning.hidden = persisted;
+
+      tracker.querySelectorAll<HTMLElement>('[data-stage-item]').forEach((item) => {
+        const stage = item.dataset.stageItem;
+        item.classList.toggle(
+          'is-complete',
+          isLessonStage(stage) && progress.completedStages.includes(stage),
+        );
+      });
+
+      document
+        .querySelectorAll<HTMLInputElement>(
+          `[data-stage-checkbox][data-lesson-id="${lessonId}"]`,
+        )
+        .forEach((checkbox) => {
+          const stage = checkbox.dataset.stageCheckbox;
+          checkbox.checked =
+            isLessonStage(stage) && progress.completedStages.includes(stage);
+        });
+    };
+
+    document
+      .querySelectorAll<HTMLInputElement>(
+        `[data-stage-checkbox][data-lesson-id="${lessonId}"]`,
+      )
+      .forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+          const stage = checkbox.dataset.stageCheckbox;
+          if (!isLessonStage(stage)) return;
+          progressAdapter.setStage(lessonId, stage, checkbox.checked);
+          render();
+        });
+      });
+
+    tracker
+      .querySelector<HTMLButtonElement>('[data-reset-progress]')
+      ?.addEventListener('click', () => {
+        progressAdapter.reset(lessonId);
+        render();
+      });
+
+    render();
+  });
+</script>

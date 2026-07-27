@@ -1,0 +1,116 @@
+{
+  "id": "assessment-git-state-001",
+  "created": "2026-07-27",
+  "status": "ready",
+  "tags": ["git", "foundations", "closed-resource"],
+  "source": "lesson-git-working-tree-001",
+  "visibility": "public",
+  "kind": "assessment",
+  "track": "git-cross-device",
+  "lesson": "lesson-git-working-tree-001",
+  "estimated_minutes": 20,
+  "resource_policy": {
+    "mode": "closed-resource",
+    "allowed": [
+      "disposable local Git repository",
+      "terminal for executing the submitted commands"
+    ],
+    "prohibited": ["lesson text", "saved answer key", "external search"]
+  },
+  "objectives": [
+    {
+      "id": "explain-states",
+      "statement": "Explain working tree, staging area, and commit as distinct states."
+    },
+    {
+      "id": "predict-commit",
+      "statement": "Predict committed and remaining content from a command sequence."
+    },
+    {
+      "id": "diagnose-status",
+      "statement": "Diagnose a misleading interpretation of short status output."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1-explain",
+      "type": "constructed-response",
+      "objective": "explain-states",
+      "prompt": "Explain the three states using one file as an example. Include what git add and git commit each change."
+    },
+    {
+      "id": "q2-apply",
+      "type": "command-sequence",
+      "objective": "predict-commit",
+      "prompt": "Two files changed, but only lesson.md belongs in the next commit. Give the inspect, stage, verify, and commit commands, then state what remains."
+    },
+    {
+      "id": "q3-diagnose",
+      "type": "diagnosis",
+      "objective": "diagnose-status",
+      "prompt": "A learner sees M in the left status column and says the file is modified but unstaged. Decide whether that is correct and explain both status columns."
+    }
+  ],
+  "rubric": {
+    "criteria": [
+      {
+        "id": "explain",
+        "dimension": "explain",
+        "critical": true,
+        "meets": "Defines each state and accurately distinguishes git add from git commit."
+      },
+      {
+        "id": "apply",
+        "dimension": "apply",
+        "critical": true,
+        "meets": "Names only lesson.md when staging and verifies the staged diff before committing."
+      },
+      {
+        "id": "diagnose",
+        "dimension": "diagnose",
+        "critical": true,
+        "meets": "Identifies the left column as index state and corrects the learner's claim."
+      }
+    ],
+    "passing_rule": "Every critical criterion meets its evidence; no total score can replace a failed critical criterion."
+  },
+  "answer_key": {
+    "q1_explain": "Editing changes the working tree, git add records the selected version in the index, and git commit saves the indexed version as a history snapshot.",
+    "q2_apply": [
+      "git status --short",
+      "git add lesson.md",
+      "git diff --cached",
+      "git commit -m \"Record lesson\"",
+      "The other file remains uncommitted in the working tree."
+    ],
+    "q3_diagnose": "The claim is incorrect because M in the left column means the path is staged; the right column would show an unstaged working-tree modification."
+  },
+  "misconception_routes": [
+    {
+      "cause": "inaccurate-mental-model",
+      "signal": "Treats staging and committing as the same operation.",
+      "action": "Contrast an indexed version with a later working-tree edit, then use variant-b."
+    },
+    {
+      "cause": "procedural-error",
+      "signal": "Stages every changed path despite the stated scope.",
+      "action": "Practice path-specific staging with three harmless files, then use variant-b."
+    },
+    {
+      "cause": "ambiguous-assessment",
+      "signal": "The grader cannot determine which status columns the prompt intends.",
+      "action": "Repair the prompt before grading and do not count the attempt."
+    }
+  ],
+  "reassessment": {
+    "earliest_delay_hours": 24,
+    "variant": {
+      "id": "variant-b",
+      "prompt": "notes.md is staged and then edited again before commit. Explain which version is committed and how both versions appear in short status."
+    }
+  },
+  "review_schedule": {
+    "after_provisional_days": [1, 7, 30],
+    "retained_evidence": "A delayed closed-resource variant meets every critical criterion."
+  }
+}

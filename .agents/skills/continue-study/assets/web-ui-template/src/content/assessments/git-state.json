@@ -1,0 +1,35 @@
+{
+  "id": "assessment-git-state-001",
+  "lessonId": "lesson-git-working-tree-001",
+  "resourcePolicy": "노트와 이전 답안을 보지 않고 답합니다. Git 실행은 허용되지만 실제 저장소를 변경하지 마세요.",
+  "questions": [
+    {
+      "id": "model",
+      "prompt": "working tree, staging area, commit의 관계를 택배를 제외한 자기만의 비유로 설명하세요.",
+      "criterion": "세 영역의 역할과 이동 방향을 구분하며 git add가 commit이 아님을 설명한다."
+    },
+    {
+      "id": "diagnose",
+      "prompt": "민기는 두 파일을 수정하고 git add lesson.md를 실행한 뒤 git commit했습니다. notes.md 변경이 원격 저장소에 올라갔다고 생각합니다. 무엇이 잘못된 판단이며 무엇을 확인해야 하나요?",
+      "criterion": "notes.md는 staged되지 않았으므로 commit에 포함되지 않았다고 진단하고 git status 또는 diff 확인을 제시한다."
+    }
+  ],
+  "passingEvidence": "두 문항 모두에서 세 영역을 정확히 구분하고, 두 번째 문항에서 확인 명령과 이유를 제시한다.",
+  "correction": [
+    {
+      "cause": "부정확한 mental model",
+      "signal": "git add를 저장이나 원격 업로드라고 설명했다.",
+      "action": "세 상자를 그려 변경 하나가 working tree에서 staging area를 거쳐 commit으로 이동하는 과정을 다시 표시한다."
+    },
+    {
+      "cause": "절차 오류",
+      "signal": "상태나 staged diff를 보지 않고 곧바로 commit했다.",
+      "action": "새 파일 이름으로 바꾼 변형 문제에서 확인, 선택, 검토, 기록 순서를 다시 구성한다."
+    },
+    {
+      "cause": "약한 retrieval",
+      "signal": "설명을 보면 알지만 자료 없이 세 영역을 떠올리지 못했다.",
+      "action": "10분 뒤 빈 화면에서 세 영역과 두 이동 명령만 다시 적는다."
+    }
+  ]
+}

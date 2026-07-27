@@ -20,13 +20,47 @@ prepare review questions.
 
 - `inbox/`: one new file per observation; do not combine unrelated captures.
 - `topics/`: durable explanations that can be understood without chat history.
+- `curriculum/`: goals, prerequisite graphs, learning order, and advancement
+  evidence; link to canonical topics instead of copying explanations.
+- `lessons/`: bounded teaching units with objectives, explanation, worked
+  example, misconception, recall check, and practice routes.
+- `assignments/`: guided, faded, independent, or transfer practice definitions;
+  keep one support mode per file.
+- `assessments/`: questions, criterion-level rubrics, variants, and corrective
+  routes; keep learner attempts out of the definition.
 - `reviews/questions/`: retrieval questions with answers in the same document.
 - `reviews/weekly/`: dated reflection on what changed in Miles's understanding.
-- `maps/`: indexes that connect topics without duplicating their content.
+- `maps/`: indexes that connect topics without duplicating their content;
+  `maps/progress.md` is the current agent-readable checkpoint.
+- Progress store: detailed attempts, answers, scores, hints, due dates, and UI
+  events. It is not a second canonical copy of public learning content.
 
-Content notes other than directory `README.md` files must begin with frontmatter
-containing `id`, `created`, `status`, `tags`, `source`, and `visibility`.
-Visibility must be `public`.
+Markdown content notes other than directory `README.md` files must begin with
+frontmatter containing `id`, `created`, `status`, `tags`, `source`, and
+`visibility`. Assessment definitions use JSON instead; those fields are
+required as top-level JSON properties. Visibility must be `public`.
+
+Read `.agents/skills/continue-study/SKILL.md` and its
+`references/learning-model.md` before creating or grading a curriculum, lesson,
+assignment, assessment, mastery decision, or progress checkpoint. Use the
+complete examples in `templates/` as structural starting points.
+
+## Learning evidence
+
+- Use `locked`, `learning`, `practiced`, `provisional`, `review_due`, and
+  `retained` as the mastery progression.
+- Never infer progress from a file's existence, a plan, or an unanswered
+  exercise.
+- Grade explain, apply, diagnose, and transfer dimensions against stated rubric
+  evidence; do not average away a failed critical criterion.
+- Immediate assessment can support `provisional`, not `retained`. Require a
+  delayed closed-resource retrieval or transfer result for `retained`.
+- Classify an error before correction and use a different reassessment variant.
+- Update `maps/progress.md` with verified activity, current interpretation,
+  unresolved questions, the exact stopping point, one next action, and
+  supporting repository paths.
+- Do not claim cross-device continuity until the checkpoint commit is pushed
+  and verified. Browser-local progress is development-only and single-device.
 
 ## Git workflow
 

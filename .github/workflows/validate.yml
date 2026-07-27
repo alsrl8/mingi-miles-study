@@ -21,5 +21,36 @@ jobs:
       - name: Test learning CLI
         run: bash tests/test_learn.sh
 
+      - name: Test portable study skill
+        run: bash tests/test_skill.sh
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: .agents/skills/continue-study/assets/web-ui-template/package-lock.json
+
+      - name: Install Web UI dependencies
+        working-directory: .agents/skills/continue-study/assets/web-ui-template
+        run: npm ci
+
+      - name: Test Web UI progress fallback
+        working-directory: .agents/skills/continue-study/assets/web-ui-template
+        run: npm test
+
+      - name: Build Web UI example
+        working-directory: .agents/skills/continue-study/assets/web-ui-template
+        env:
+          ASTRO_TELEMETRY_DISABLED: "1"
+          ASTRO_BASE: "/mingi-miles-study"
+        run: npm run build
+
+      - name: Verify repository-subpath navigation
+        working-directory: .agents/skills/continue-study/assets/web-ui-template
+        run: |
+          grep -Fq 'href="/mingi-miles-study/lessons/git-working-tree/"' dist/index.html
+          grep -Fq 'href="/mingi-miles-study/"' dist/lessons/git-working-tree/index.html
+
       - name: Check whitespace
         run: git diff --check

@@ -1,0 +1,47 @@
+---
+import '../styles/global.css';
+import { withBase } from '../lib/urls';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const homeHref = withBase('/');
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>↗</text></svg>" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="site-header shell">
+      <a class="brand" href={homeHref} aria-label="Miles Study 홈">
+        <span class="brand-mark">M</span>
+        <span>
+          <strong>Miles Study</strong>
+          <small>Build from first principles</small>
+        </span>
+      </a>
+      <div class="sync-state">
+        <span class="status-dot"></span>
+        이 브라우저에 임시 저장
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer shell">
+      <span>학습 콘텐츠는 Git, 개인 진도는 인증된 저장소에서 관리합니다.</span>
+      <a href={homeHref}>학습 대시보드</a>
+    </footer>
+  </body>
+</html>

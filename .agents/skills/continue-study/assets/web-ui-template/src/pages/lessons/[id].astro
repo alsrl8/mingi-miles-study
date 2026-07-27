@@ -1,0 +1,264 @@
+---
+import { getCollection } from 'astro:content';
+import StageComplete from '../../components/StageComplete.astro';
+import StageTracker from '../../components/StageTracker.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/urls';
+
+export async function getStaticPaths() {
+  const [lessons, assignments, assessments] = await Promise.all([
+    getCollection('lessons'),
+    getCollection('assignments'),
+    getCollection('assessments'),
+  ]);
+  return lessons.map((lesson) => ({
+    params: { id: lesson.id },
+    props: {
+      lesson,
+      guidedAssignment: assignments.find(
+        (item) => item.data.id === lesson.data.guidedAssignmentId,
+      ),
+      independentAssignment: assignments.find(
+        (item) => item.data.id === lesson.data.independentAssignmentId,
+      ),
+      assessment: assessments.find(
+        (item) => item.data.id === lesson.data.assessmentId,
+      ),
+    },
+  }));
+}
+
+const { lesson, guidedAssignment, independentAssignment, assessment } =
+  Astro.props;
+if (!guidedAssignment || !independentAssignment || !assessment) {
+  throw new Error(`Learning references are incomplete for ${lesson.data.id}`);
+}
+const { data } = lesson;
+const lessonId = data.id;
+for (const item of [guidedAssignment, independentAssignment, assessment]) {
+  if (item.data.lessonId !== lessonId) {
+    throw new Error(
+      `Learning reference ${item.data.id} points to ${item.data.lessonId}, not ${lessonId}`,
+    );
+  }
+}
+const homeHref = withBase('/');
+---
+
+<BaseLayout title={`${data.title} · Miles Study`} description={data.summary}>
+  <div class="lesson-shell shell">
+    <aside class="lesson-sidebar">
+      <a class="back-link" href={homeHref}>← 대시보드</a>
+      <StageTracker lessonId={lessonId} />
+      <nav aria-label="레슨 목차">
+        <span class="kicker">LESSON MAP</span>
+        <a href="#concept">01. 개념 설명</a>
+        <a href="#example">02. 풀이 예제</a>
+        <a href="#guided">03. Guided 과제</a>
+        <a href="#independent">04. 독립 과제</a>
+        <a href="#assessment">05. 시험</a>
+        <a href="#correction">06. 교정 경로</a>
+      </nav>
+    </aside>
+
+    <article class="lesson-content">
+      <header class="lesson-hero">
+        <div class="lesson-meta">
+          <span class="eyebrow">{data.eyebrow}</span>
+          <span>{data.estimatedMinutes}분</span>
+        </div>
+        <h1>{data.title}</h1>
+        <p>{data.summary}</p>
+        <div class="objective-box">
+          <span>이 레슨을 마치면</span>
+          <strong>{data.objective}</strong>
+        </div>
+        <p class="prerequisite"><strong>선수 지식</strong> {data.prerequisite}</p>
+      </header>
+
+      <section class="lesson-section" id="concept">
+        <div class="section-label"><span>01</span> CONCEPT</div>
+        <h2>{data.mentalModel.title}</h2>
+        <div class="concept-grid">
+          {data.explanation.map((item, index) => (
+            <article>
+              <span>0{index + 1}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+        <div class="mental-model" aria-label={data.mentalModel.title}>
+          {data.mentalModel.steps.map((step) => (
+            <>
+              <div>
+                <small>{step.label}</small>
+                <strong>{step.name}</strong>
+                <span>{step.description}</span>
+              </div>
+              {step.transition && <b>{step.transition} →</b>}
+            </>
+          ))}
+        </div>
+        <aside class="misconception">
+          <strong>{data.misconception.title}</strong>
+          <p>{data.misconception.body}</p>
+        </aside>
+        <details class="recall-check">
+          <summary>{data.recallCheck.prompt}</summary>
+          <p>{data.recallCheck.answer}</p>
+        </details>
+        <StageComplete lessonId={lessonId} stage="explanation" label={data.completionLabels.explanation} />
+      </section>
+
+      <section class="lesson-section" id="example">
+        <div class="section-label"><span>02</span> WORKED EXAMPLE</div>
+        <h2>{data.workedExample.title}</h2>
+        <p class="lead">{data.workedExample.scenario}</p>
+        <ol class="command-steps">
+          {data.workedExample.steps.map((step, index) => (
+            <li>
+              <span>{index + 1}</span>
+              <div>
+                <code>{step.action}</code>
+                <p>{step.reasoning}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div class="conclusion-box">
+          <span>핵심 결론</span>
+          <p>{data.workedExample.conclusion}</p>
+        </div>
+        <StageComplete lessonId={lessonId} stage="worked-example" label={data.completionLabels.workedExample} />
+      </section>
+
+      <section class="lesson-section task-section" id="guided">
+        <div class="section-label"><span>03</span> GUIDED TASK</div>
+        <h2>{guidedAssignment.data.title}</h2>
+        <p class="lead">{guidedAssignment.data.prompt}</p>
+        <ol class="task-checklist">
+          {guidedAssignment.data.steps?.map((step) => (
+            <li><input type="checkbox" aria-label={step} /><span>{step}</span></li>
+          ))}
+        </ol>
+        <details class="hint">
+          <summary>막혔을 때만 힌트 보기</summary>
+          <p>{guidedAssignment.data.hint}</p>
+        </details>
+        <div class="rubric-line">
+          <strong>성공 증거</strong>{guidedAssignment.data.success}
+        </div>
+        <StageComplete lessonId={lessonId} stage="guided-task" label={data.completionLabels.guidedTask} />
+      </section>
+
+      <section class="lesson-section task-section independent" id="independent">
+        <div class="section-label"><span>04</span> INDEPENDENT TASK</div>
+        <h2>{independentAssignment.data.title}</h2>
+        <p class="lead">{independentAssignment.data.prompt}</p>
+        <div class="constraint-grid">
+          {independentAssignment.data.constraints.map((constraint) => (
+            <span>✓ {constraint}</span>
+          ))}
+        </div>
+        <label class="answer-field">
+          <span>내 답안</span>
+          <textarea rows="8" placeholder={independentAssignment.data.answerPlaceholder ?? '답안을 작성하세요. 이 내용은 브라우저를 새로고침하면 사라집니다.'}></textarea>
+        </label>
+        <p class="artifact-note">
+          <strong>제출 형태</strong> {independentAssignment.data.artifact}
+        </p>
+        <StageComplete lessonId={lessonId} stage="independent-task" label={data.completionLabels.independentTask} />
+      </section>
+
+      <section class="lesson-section assessment-section" id="assessment">
+        <div class="section-label"><span>05</span> ASSESSMENT</div>
+        <div class="assessment-head">
+          <div>
+            <h2>자료 없이 이해를 꺼내 봅니다</h2>
+            <p>{assessment.data.resourcePolicy}</p>
+          </div>
+          <span class="closed-book">CLOSED NOTES</span>
+        </div>
+        <form class="assessment-form" data-assessment-form>
+          {assessment.data.questions.map((question, index) => (
+            <label class="question-card">
+              <span>문항 {index + 1}</span>
+              <strong>{question.prompt}</strong>
+              <textarea rows="6" name={question.id} required></textarea>
+              <small data-rubric hidden><b>채점 기준</b> {question.criterion}</small>
+            </label>
+          ))}
+          <button class="primary-button" type="submit">채점 기준 확인하기</button>
+          <div class="assessment-result" data-assessment-result hidden>
+            <span>자기 채점 전에 답안을 고정했습니다</span>
+            <p>
+              <strong>통과 증거</strong> {assessment.data.passingEvidence}
+            </p>
+            <p>
+              기준을 충족했다고 판단해도 즉시 상태는
+              <code>provisional</code>입니다. 내일 자료 없이 다시
+              설명해야 <code>retained</code> 근거가 생깁니다.
+            </p>
+          </div>
+        </form>
+        <StageComplete lessonId={lessonId} stage="assessment" label={data.completionLabels.assessment} />
+      </section>
+
+      <section class="lesson-section" id="correction">
+        <div class="section-label"><span>06</span> CORRECTIVE PATH</div>
+        <h2>틀렸다면 원인에 맞게 돌아갑니다</h2>
+        <p class="lead">
+          같은 문제를 외워 다시 맞히는 대신, 오류 원인을 고르고 다른
+          활동으로 수정합니다.
+        </p>
+        <div class="correction-grid">
+          {assessment.data.correction.map((route) => (
+            <article>
+              <span>{route.cause}</span>
+              <strong>{route.signal}</strong>
+              <p>{route.action}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <footer class="lesson-finish">
+        <span class="kicker">NEXT CHECKPOINT</span>
+        <h2>오늘은 증거가 생긴 곳까지만 기록합니다.</h2>
+        <p>
+          실제 운영에서는 답안, rubric 결과, 다음 복습일을 progress
+          store에 저장하고 현재 상태를 <code>maps/progress.md</code>에
+          요약합니다.
+        </p>
+        <a class="secondary-button" href={homeHref}>대시보드로 돌아가기</a>
+      </footer>
+    </article>
+  </div>
+
+  <script>
+    document
+      .querySelectorAll<HTMLFormElement>('[data-assessment-form]')
+      .forEach((form) => {
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          if (!form.reportValidity()) return;
+
+          form
+            .querySelectorAll<HTMLElement>('[data-rubric]')
+            .forEach((rubric) => {
+              rubric.hidden = false;
+            });
+          const result = form.querySelector<HTMLElement>(
+            '[data-assessment-result]',
+          );
+          if (result) result.hidden = false;
+          form.querySelectorAll<HTMLTextAreaElement>('textarea').forEach(
+            (field) => {
+              field.readOnly = true;
+            },
+          );
+        });
+      });
+  </script>
+</BaseLayout>

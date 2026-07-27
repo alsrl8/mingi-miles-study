@@ -1,0 +1,4 @@
+interface:
+  display_name: "Continue Study"
+  short_description: "Resume, teach, assess, and checkpoint learning"
+  default_prompt: "Use $continue-study to resume my current learning and guide me through the next verified step."
