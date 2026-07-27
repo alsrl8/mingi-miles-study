@@ -1,0 +1,15 @@
+{
+  "id": "assignment-git-state-independent-001",
+  "lessonId": "lesson-git-working-tree-001",
+  "mode": "independent",
+  "title": "이제 안내 없이 구성합니다",
+  "prompt": "세 파일을 수정했지만 README 변경만 먼저 기록하려고 합니다. 상태 확인부터 기록 검증까지 필요한 명령 순서를 만들고, 각 명령이 다루는 영역을 설명하세요.",
+  "success": "의도한 파일만 commit하고 나머지 working-tree 변경을 보존한다.",
+  "constraints": [
+    "git add . 를 사용하지 않는다.",
+    "commit 전 staged diff를 확인한다.",
+    "commit 후 나머지 변경이 보존됐는지 확인한다."
+  ],
+  "artifact": "명령 순서와 각 단계의 판단 근거를 담은 짧은 답안",
+  "answerPlaceholder": "명령과 판단 근거를 여기에 작성하세요. 이 내용은 브라우저를 새로고침하면 사라집니다."
+}

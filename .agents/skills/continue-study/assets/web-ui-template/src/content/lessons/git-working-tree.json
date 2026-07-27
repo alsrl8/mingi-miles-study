@@ -1,0 +1,88 @@
+{
+  "id": "lesson-git-working-tree-001",
+  "title": "변경사항은 어디에 있을까?",
+  "eyebrow": "Git 기초 · Lesson 01",
+  "summary": "working tree, staging area, commit의 차이를 직접 설명하고 안전한 다음 행동을 선택합니다.",
+  "estimatedMinutes": 25,
+  "track": "Git으로 어디서든 공부 이어가기",
+  "order": 1,
+  "prerequisite": "터미널에서 현재 디렉터리를 확인하고 파일을 저장할 수 있다.",
+  "objective": "파일 변경이 working tree, staging area, commit 중 어디에 있는지 판단하고 각 이동을 설명할 수 있다.",
+  "explanation": [
+    {
+      "title": "Working tree는 지금 손대고 있는 책상",
+      "body": "파일을 편집했지만 아직 다음 기록으로 묶지 않은 상태입니다. git status는 이 책상 위에 무엇이 달라졌는지 보여줍니다."
+    },
+    {
+      "title": "Staging area는 다음 기록의 목차",
+      "body": "git add는 파일을 업로드하거나 저장하는 명령이 아닙니다. 다음 commit에 포함할 변경을 선택해 목차에 올립니다."
+    },
+    {
+      "title": "Commit은 설명이 붙은 스냅샷",
+      "body": "git commit은 staging area에 선택된 변경만 기록합니다. working tree에 남은 다른 변경은 자동으로 따라오지 않습니다."
+    }
+  ],
+  "mentalModel": {
+    "title": "세 공간의 관계",
+    "steps": [
+      {
+        "label": "편집",
+        "name": "Working tree",
+        "description": "아직 선택 전",
+        "transition": "git add"
+      },
+      {
+        "label": "선택",
+        "name": "Staging area",
+        "description": "다음 기록의 범위",
+        "transition": "git commit"
+      },
+      {
+        "label": "기록",
+        "name": "Commit",
+        "description": "설명 있는 스냅샷"
+      }
+    ]
+  },
+  "misconception": {
+    "title": "자주 하는 오해",
+    "body": "git add는 GitHub에 올리는 명령이 아닙니다. 오직 다음 commit에 포함할 로컬 변경을 선택합니다."
+  },
+  "recallCheck": {
+    "prompt": "30초 회상: git add를 실행하면 무엇이 달라질까요?",
+    "answer": "선택한 변경이 working tree에서 사라지는 것이 아니라 staging area에도 기록되어 다음 commit의 후보가 됩니다."
+  },
+  "workedExample": {
+    "title": "판단 과정을 따라가 봅니다",
+    "scenario": "lesson.md와 notes.md를 수정했지만 이번 기록에는 lesson.md만 넣고 싶습니다.",
+    "steps": [
+      {
+        "action": "git status --short",
+        "reasoning": "두 파일이 working tree에서 변경됐는지 먼저 확인합니다. 상태를 보기 전에는 기록 범위를 추측하지 않습니다."
+      },
+      {
+        "action": "git add lesson.md",
+        "reasoning": "이번 commit의 목적에 맞는 lesson.md만 staging area에 선택합니다."
+      },
+      {
+        "action": "git diff --cached",
+        "reasoning": "commit될 내용이 의도한 변경인지 목차와 실제 내용을 함께 검토합니다."
+      },
+      {
+        "action": "git commit -m \"Add working tree lesson\"",
+        "reasoning": "검토한 staged 변경만 하나의 설명 가능한 기록으로 만듭니다."
+      }
+    ],
+    "conclusion": "notes.md는 사라지지 않습니다. working tree에 남아 다음 commit에서 따로 선택할 수 있습니다."
+  },
+  "completionLabels": {
+    "explanation": "자료를 닫고 세 공간을 설명할 수 있어요",
+    "workedExample": "각 명령이 필요한 이유를 설명할 수 있어요",
+    "guidedTask": "단계를 수행하고 각 결정을 설명했어요",
+    "independentTask": "힌트 없이 답안을 완성했어요",
+    "assessment": "답안을 작성하고 rubric별 근거를 확인했어요"
+  },
+  "guidedAssignmentId": "assignment-git-state-guided-001",
+  "independentAssignmentId": "assignment-git-state-independent-001",
+  "assessmentId": "assessment-git-state-001"
+}

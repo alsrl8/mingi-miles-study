@@ -1,0 +1,22 @@
+{
+  "activeLessonId": "lesson-git-working-tree-001",
+  "activeStage": "concept",
+  "trackProgress": 0,
+  "mastery": {
+    "explain": { "label": "증거 없음", "progress": 0 },
+    "apply": { "label": "증거 없음", "progress": 0 },
+    "diagnose": { "label": "잠김", "progress": 0 },
+    "transfer": { "label": "잠김", "progress": 0 }
+  },
+  "review": {
+    "status": "예정 없음",
+    "description": "즉시 시험을 통과하면 다음 날 첫 retrieval review가 열립니다. 한 번 맞힌 것을 장기 기억으로 오해하지 않습니다.",
+    "schedule": [
+      { "offset": "1일", "label": "첫 회상" },
+      { "offset": "7일", "label": "간격 복습" },
+      { "offset": "30일", "label": "전이 확인" }
+    ]
+  },
+  "evidenceStatus": "아직 생성된 학습 증거 없음",
+  "nextAction": "개념 설명을 읽고 자료를 닫은 뒤 세 가지 Git 상태를 자신의 말로 설명한다."
+}

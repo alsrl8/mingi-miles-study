@@ -1,0 +1,18 @@
+---
+interface Props {
+  value: number;
+  label: string;
+  size?: 'small' | 'large';
+}
+
+const { value, label, size = 'small' } = Astro.props;
+const bounded = Math.min(100, Math.max(0, value));
+---
+
+<div
+  class:list={['progress-ring', `progress-ring--${size}`]}
+  style={`--progress: ${bounded * 3.6}deg`}
+  aria-label={`${label} ${bounded}%`}
+>
+  <span><strong>{bounded}%</strong><small>{label}</small></span>
+</div>

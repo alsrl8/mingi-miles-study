@@ -1,0 +1,134 @@
+---
+import { getCollection } from 'astro:content';
+import ProgressRing from '../components/ProgressRing.astro';
+import checkpoint from '../data/checkpoint.json';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/urls';
+
+const lessons = (await getCollection('lessons')).sort(
+  (left, right) => left.data.order - right.data.order,
+);
+const lesson = lessons.find(
+  (candidate) => candidate.data.id === checkpoint.activeLessonId,
+);
+if (!lesson) {
+  throw new Error(`Active lesson not found: ${checkpoint.activeLessonId}`);
+}
+const lessonHref = withBase(`/lessons/${lesson.id}/`);
+---
+
+<BaseLayout
+  title="Miles Study · 오늘의 학습"
+  description="개념부터 과제와 시험까지 이어지는 개인 학습 대시보드"
+>
+  <section class="dashboard-hero shell">
+    <div class="hero-copy">
+      <span class="eyebrow">
+        오늘의 학습 · 약 {lesson.data.estimatedMinutes}분
+      </span>
+      <h1>어제 멈춘 곳에서,<br /><em>한 단계만 더.</em></h1>
+      <p>
+        개념을 읽는 데서 끝내지 않고 직접 설명하고, 적용하고, 며칠 뒤
+        다시 꺼내 봅니다.
+      </p>
+      <a class="primary-button" href={lessonHref}>
+        이어서 공부하기 <span aria-hidden="true">→</span>
+      </a>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-top">
+        <span>활성 Track</span>
+        <span class="pill pill-mint">FOUNDATION</span>
+      </div>
+      <h2>{lesson.data.track}</h2>
+      <p>{lesson.data.summary}</p>
+      <div class="continue-row">
+        <ProgressRing
+          value={checkpoint.trackProgress}
+          label="Evidence"
+          size="large"
+        />
+        <div>
+          <span class="kicker">다음 학습</span>
+          <strong>{lesson.data.eyebrow}</strong>
+          <small>선수 개념부터 차근차근 시작합니다.</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-grid shell">
+    <article class="panel today-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">TODAY</span>
+          <h2>지금 할 일</h2>
+        </div>
+        <span class="date-chip">{lesson.data.estimatedMinutes} MIN</span>
+      </div>
+      <a class="lesson-row" href={lessonHref}>
+        <span class="lesson-number">
+          {String(lesson.data.order).padStart(2, '0')}
+        </span>
+        <span class="lesson-main">
+          <small>{lesson.data.eyebrow}</small>
+          <strong>{lesson.data.title}</strong>
+          <span>{lesson.data.objective}</span>
+        </span>
+        <span class="round-arrow">↗</span>
+      </a>
+      <div class="mini-steps">
+        {[
+          ['concept', '개념'],
+          ['example', '예제'],
+          ['assignment', '과제'],
+          ['assessment', '시험'],
+        ].map(([id, label]) => (
+          <span class:list={{ 'is-active': checkpoint.activeStage === id }}>{label}</span>
+        ))}
+      </div>
+    </article>
+
+    <article class="panel mastery-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">MASTERY</span>
+          <h2>증거로 보는 이해</h2>
+        </div>
+      </div>
+      <div class="dimension-list">
+        <div><span>설명하기</span><strong>{checkpoint.mastery.explain.label}</strong><i style={`--value: ${checkpoint.mastery.explain.progress}%`}></i></div>
+        <div><span>적용하기</span><strong>{checkpoint.mastery.apply.label}</strong><i style={`--value: ${checkpoint.mastery.apply.progress}%`}></i></div>
+        <div><span>진단하기</span><strong>{checkpoint.mastery.diagnose.label}</strong><i style={`--value: ${checkpoint.mastery.diagnose.progress}%`}></i></div>
+        <div><span>전이하기</span><strong>{checkpoint.mastery.transfer.label}</strong><i style={`--value: ${checkpoint.mastery.transfer.progress}%`}></i></div>
+      </div>
+    </article>
+
+    <article class="panel review-panel">
+      <div class="panel-head">
+        <div>
+          <span class="kicker">REVIEW</span>
+          <h2>복습 일정</h2>
+        </div>
+        <span class="pill">{checkpoint.review.status}</span>
+      </div>
+      <p>{checkpoint.review.description}</p>
+      <div class="review-calendar">
+        {checkpoint.review.schedule.map((item) => (
+          <span><small>{item.offset}</small>{item.label}</span>
+        ))}
+      </div>
+    </article>
+
+    <article class="panel checkpoint-panel">
+      <span class="kicker">CHECKPOINT</span>
+      <h2>다른 기기에서도 맥락을 잃지 않도록</h2>
+      <p>
+        상세 시도 기록은 progress store에, 다음 agent가 읽을 현재 상태는
+        <code>maps/progress.md</code>에 남깁니다.
+      </p>
+      <p><strong>다음 행동</strong> {checkpoint.nextAction}</p>
+      <div class="checkpoint-status"><span></span> {checkpoint.evidenceStatus}</div>
+    </article>
+  </section>
+</BaseLayout>

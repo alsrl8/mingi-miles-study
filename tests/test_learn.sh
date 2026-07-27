@@ -6,8 +6,14 @@ source_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 test_root="$(mktemp -d)"
 trap 'rm -rf "$test_root"' EXIT
 
-cp -R "$source_root/." "$test_root/repo"
-rm -rf "$test_root/repo/.git"
+mkdir -p "$test_root/repo"
+tar \
+  --exclude='./.git' \
+  --exclude='*/node_modules' \
+  --exclude='*/dist' \
+  --exclude='*/.astro' \
+  -C "$source_root" -cf - . |
+  tar -C "$test_root/repo" -xf -
 
 git -C "$test_root/repo" init -b main >/dev/null
 git -C "$test_root/repo" config user.name "Learning Test"
