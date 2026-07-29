@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import questions from '../data/interview.json';
+import { withBase } from '../lib/urls';
+
+const interviewHref = withBase('/interview/');
+---
+
+<BaseLayout
+  title="답변 검토 · Miles Learning Profile"
+  description="인터뷰 답변과 미확인 영역을 검토하는 화면"
+>
+  <section class="profile shell">
+    <header class="profile-head">
+      <div>
+        <span class="eyebrow">REVIEW BEFORE INFERENCE</span>
+        <h1>내가 말한 것부터<br />정확히 확인합니다.</h1>
+      </div>
+      <p>
+        아래 내용은 확정된 성향 분석이 아닙니다. 직접 작성한 답변은
+        <strong>확인된 진술</strong>, 건너뛴 항목은
+        <strong>미확인 영역</strong>으로만 표시합니다.
+      </p>
+    </header>
+
+    <div class="profile-toolbar">
+      <a class="secondary-button" href={interviewHref}>인터뷰 수정</a>
+      <button class="secondary-button" type="button" data-copy>요약 복사</button>
+      <button class="primary-button" type="button" data-export>JSON 내보내기</button>
+    </div>
+    <p class="tool-status" data-tool-status role="status"></p>
+
+    <div class="profile-grid">
+      <section class="profile-panel confirmed">
+        <span class="panel-label">CONFIRMED STATEMENTS</span>
+        <h2>확인된 진술</h2>
+        <p>해석을 더하지 않은 Miles의 직접 답변입니다.</p>
+        <div data-confirmed></div>
+      </section>
+
+      <section class="profile-panel unknown">
+        <span class="panel-label">UNKNOWN</span>
+        <h2>아직 확인하지 않은 영역</h2>
+        <p>답하지 않았거나 건너뛴 내용입니다. 공백을 추측으로 채우지 않습니다.</p>
+        <ul data-unknown></ul>
+      </section>
+
+      <section class="profile-panel inference">
+        <span class="panel-label">NEXT STEP</span>
+        <h2>다음 판단 단계</h2>
+        <p>
+          답변을 함께 검토한 뒤 관심 후보를 2~3개로 묶고, 각 후보에 짧은
+          설명·적용 질문을 진행합니다. 그 진단 전에는 학습 주제를 확정하지
+          않습니다.
+        </p>
+      </section>
+    </div>
+  </section>
+</BaseLayout>
+
+<div hidden data-question-data>{JSON.stringify(questions)}</div>
+
+<script>
+  import {
+    exportInterviewJson,
+    loadInterviewState,
+  } from '../lib/interview';
+
+  type Question = {
+    id: string;
+    stage: string;
+    title: string;
+    prompt: string;
+  };
+
+  const state = loadInterviewState().state;
+  const rawQuestions =
+    document.querySelector<HTMLElement>('[data-question-data]')?.textContent ??
+    '[]';
+  const questions = JSON.parse(rawQuestions) as Question[];
+  const confirmed = document.querySelector<HTMLElement>('[data-confirmed]');
+  const unknown = document.querySelector<HTMLElement>('[data-unknown]');
+  const status = document.querySelector<HTMLElement>('[data-tool-status]');
+
+  const answered = questions.filter((question) =>
+    state.answers[question.id]?.trim(),
+  );
+  const unanswered = questions.filter(
+    (question) => !state.answers[question.id]?.trim(),
+  );
+
+  if (confirmed) {
+    confirmed.innerHTML = answered.length
+      ? answered
+          .map(
+            (question) => `
+              <article class="answer-item">
+                <small>${question.stage}</small>
+                <h3>${question.title}</h3>
+                <p>${escapeHtml(state.answers[question.id])}</p>
+              </article>
+            `,
+          )
+          .join('')
+      : '<div class="empty-state">아직 작성한 답변이 없습니다. 인터뷰를 시작해 주세요.</div>';
+  }
+
+  if (unknown) {
+    unknown.innerHTML = unanswered.length
+      ? unanswered
+          .map(
+            (question) =>
+              `<li><strong>${question.title}</strong><span>${question.prompt}</span></li>`,
+          )
+          .join('')
+      : '<li class="all-answered">모든 질문에 답했습니다.</li>';
+  }
+
+  document
+    .querySelector<HTMLButtonElement>('[data-copy]')
+    ?.addEventListener('click', async () => {
+      const summary = buildMarkdown();
+      try {
+        await navigator.clipboard.writeText(summary);
+        if (status) status.textContent = '답변 요약을 클립보드에 복사했습니다.';
+      } catch {
+        if (status) status.textContent = '복사하지 못했습니다. JSON 내보내기를 사용해 주세요.';
+      }
+    });
+
+  document
+    .querySelector<HTMLButtonElement>('[data-export]')
+    ?.addEventListener('click', () => {
+      const blob = new Blob([exportInterviewJson(state)], {
+        type: 'application/json',
+      });
+      const anchor = document.createElement('a');
+      anchor.href = URL.createObjectURL(blob);
+      anchor.download = 'miles-learner-interview.json';
+      anchor.click();
+      URL.revokeObjectURL(anchor.href);
+      if (status) status.textContent = 'JSON 파일을 내보냈습니다.';
+    });
+
+  function buildMarkdown() {
+    const lines = ['# Miles learner interview', '', '## 확인된 진술', ''];
+    for (const question of answered) {
+      lines.push(`### ${question.title}`, '', state.answers[question.id], '');
+    }
+    lines.push('## 미확인 영역', '');
+    for (const question of unanswered) lines.push(`- ${question.title}`);
+    return lines.join('\n');
+  }
+
+  function escapeHtml(value: string) {
+    return value.replace(
+      /[&<>"']/g,
+      (character) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;',
+        })[character] ?? character,
+    );
+  }
+</script>

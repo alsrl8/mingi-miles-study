@@ -1,0 +1,314 @@
+{
+  "schema_version": "0.1",
+  "run_id": "run-repository-refactor-claude-001",
+  "scenario_id": "scenario-repository-refactor-001",
+  "engine": "claude",
+  "model": "mock-claude-reasoning",
+  "task": {
+    "title": "Extract duplicated retry policy without changing behavior",
+    "input_kind": "repository",
+    "success_criteria": [
+      "preserve retry semantics",
+      "remove duplication from three adapters",
+      "keep public API stable",
+      "pass tests and static analysis"
+    ]
+  },
+  "config": {
+    "reasoning_effort": "adaptive",
+    "max_tool_calls": 35,
+    "parallelism": 1,
+    "approval_mode": "workspace-write"
+  },
+  "started_at": "2026-07-16T04:00:00Z",
+  "completed_at": "2026-07-16T04:00:48.300Z",
+  "duration_ms": 48300,
+  "status": "success_with_rework",
+  "usage": {
+    "input_tokens": 12840,
+    "output_tokens": 3910,
+    "cached_input_tokens": 1900
+  },
+  "events": [
+    {
+      "event_id": "e01",
+      "sequence": 1,
+      "kind": "assistant",
+      "name": "plan_refactor",
+      "started_offset_ms": 0,
+      "duration_ms": 950,
+      "status": "success",
+      "summary": "Planned a reusable retry abstraction before comparing all adapter semantics."
+    },
+    {
+      "event_id": "e02",
+      "sequence": 2,
+      "kind": "tool_call",
+      "name": "search_retry_terms",
+      "started_offset_ms": 950,
+      "duration_ms": 1430,
+      "status": "success",
+      "arguments": {
+        "query": "retry|backoff|attempt",
+        "scope": "internal"
+      }
+    },
+    {
+      "event_id": "e03",
+      "sequence": 3,
+      "kind": "tool_call",
+      "name": "read_http_adapter",
+      "started_offset_ms": 2380,
+      "duration_ms": 1710,
+      "status": "success",
+      "arguments": {
+        "scope": "internal/httpadapter"
+      }
+    },
+    {
+      "event_id": "e04",
+      "sequence": 4,
+      "kind": "decision",
+      "name": "design_generic_policy",
+      "started_offset_ms": 4090,
+      "duration_ms": 1250,
+      "status": "success",
+      "summary": "Designed a configurable Policy object from the HTTP adapter alone."
+    },
+    {
+      "event_id": "e05",
+      "sequence": 5,
+      "kind": "tool_call",
+      "name": "apply_generic_policy",
+      "started_offset_ms": 5340,
+      "duration_ms": 2930,
+      "status": "success",
+      "arguments": {
+        "files": ["internal/retry/policy.go", "internal/httpadapter/client.go"]
+      }
+    },
+    {
+      "event_id": "e06",
+      "sequence": 6,
+      "kind": "tool_call",
+      "name": "read_queue_adapter",
+      "started_offset_ms": 8270,
+      "duration_ms": 1620,
+      "status": "success",
+      "arguments": {
+        "scope": "internal/queueadapter"
+      }
+    },
+    {
+      "event_id": "e07",
+      "sequence": 7,
+      "kind": "decision",
+      "name": "expand_policy_interface",
+      "started_offset_ms": 9890,
+      "duration_ms": 970,
+      "status": "success",
+      "summary": "Added adapter hooks because queue retry classification differs from HTTP."
+    },
+    {
+      "event_id": "e08",
+      "sequence": 8,
+      "kind": "tool_call",
+      "name": "apply_queue_adapter",
+      "started_offset_ms": 10860,
+      "duration_ms": 2380,
+      "status": "success",
+      "arguments": {
+        "files": ["internal/retry/policy.go", "internal/queueadapter/client.go"]
+      }
+    },
+    {
+      "event_id": "e09",
+      "sequence": 9,
+      "kind": "tool_call",
+      "name": "read_storage_adapter",
+      "started_offset_ms": 13240,
+      "duration_ms": 1840,
+      "status": "success",
+      "arguments": {
+        "scope": "internal/storageadapter"
+      }
+    },
+    {
+      "event_id": "e10",
+      "sequence": 10,
+      "kind": "decision",
+      "name": "recognize_overgeneralization",
+      "started_offset_ms": 15080,
+      "duration_ms": 1130,
+      "status": "success",
+      "summary": "The Policy interface is growing adapter-specific branches and is more complex than the duplicated code."
+    },
+    {
+      "event_id": "e11",
+      "sequence": 11,
+      "kind": "tool_call",
+      "name": "rollback_policy",
+      "started_offset_ms": 16210,
+      "duration_ms": 1760,
+      "status": "success",
+      "arguments": {
+        "files": [
+          "internal/retry/policy.go",
+          "internal/httpadapter/client.go",
+          "internal/queueadapter/client.go"
+        ]
+      }
+    },
+    {
+      "event_id": "e12",
+      "sequence": 12,
+      "kind": "tool_call",
+      "name": "run_baseline_tests",
+      "started_offset_ms": 17970,
+      "duration_ms": 5360,
+      "status": "success",
+      "arguments": {
+        "command": "go test ./..."
+      }
+    },
+    {
+      "event_id": "e13",
+      "sequence": 13,
+      "kind": "decision",
+      "name": "choose_small_retry_loop",
+      "started_offset_ms": 23330,
+      "duration_ms": 760,
+      "status": "success",
+      "summary": "Use an injected classification function and preserve adapter-specific decisions."
+    },
+    {
+      "event_id": "e14",
+      "sequence": 14,
+      "kind": "tool_call",
+      "name": "apply_shared_retry",
+      "started_offset_ms": 24090,
+      "duration_ms": 3180,
+      "status": "success",
+      "arguments": {
+        "files": [
+          "internal/retry/retry.go",
+          "internal/httpadapter/client.go",
+          "internal/queueadapter/client.go",
+          "internal/storageadapter/client.go"
+        ]
+      }
+    },
+    {
+      "event_id": "e15",
+      "sequence": 15,
+      "kind": "tool_call",
+      "name": "add_policy_tests",
+      "started_offset_ms": 27270,
+      "duration_ms": 2250,
+      "status": "success",
+      "arguments": {
+        "files": ["internal/retry/retry_test.go"]
+      }
+    },
+    {
+      "event_id": "e16",
+      "sequence": 16,
+      "kind": "tool_call",
+      "name": "run_retry_tests",
+      "started_offset_ms": 29520,
+      "duration_ms": 2370,
+      "status": "failed",
+      "arguments": {
+        "command": "go test ./internal/retry"
+      },
+      "error": {
+        "category": "behavior_mismatch",
+        "message": "final attempt delay applied after terminal failure",
+        "retryable": false
+      }
+    },
+    {
+      "event_id": "e17",
+      "sequence": 17,
+      "kind": "tool_call",
+      "name": "apply_boundary_fix",
+      "started_offset_ms": 31890,
+      "duration_ms": 620,
+      "status": "success",
+      "arguments": {
+        "files": ["internal/retry/retry.go"]
+      }
+    },
+    {
+      "event_id": "e18",
+      "sequence": 18,
+      "kind": "tool_call",
+      "name": "run_retry_tests",
+      "started_offset_ms": 32510,
+      "duration_ms": 2240,
+      "status": "success",
+      "arguments": {
+        "command": "go test ./internal/retry"
+      }
+    },
+    {
+      "event_id": "e19",
+      "sequence": 19,
+      "kind": "tool_call",
+      "name": "run_full_tests",
+      "started_offset_ms": 34750,
+      "duration_ms": 5530,
+      "status": "success",
+      "arguments": {
+        "command": "go test ./..."
+      }
+    },
+    {
+      "event_id": "e20",
+      "sequence": 20,
+      "kind": "tool_call",
+      "name": "run_static_analysis",
+      "started_offset_ms": 40280,
+      "duration_ms": 3260,
+      "status": "success",
+      "arguments": {
+        "command": "go vet ./..."
+      }
+    },
+    {
+      "event_id": "e21",
+      "sequence": 21,
+      "kind": "checkpoint",
+      "name": "review_diff",
+      "started_offset_ms": 43540,
+      "duration_ms": 1850,
+      "status": "success",
+      "summary": "Final design is small, but the abandoned Policy implementation increased elapsed time."
+    },
+    {
+      "event_id": "e22",
+      "sequence": 22,
+      "kind": "assistant",
+      "name": "final_response",
+      "started_offset_ms": 45390,
+      "duration_ms": 2910,
+      "status": "success",
+      "summary": "Reported final behavior and noted the discarded generalized design."
+    }
+  ],
+  "outcome": {
+    "result": "refactored",
+    "changed_files": 5,
+    "lines_added": 151,
+    "lines_removed": 121,
+    "tests_passed": 92,
+    "tests_failed": 0
+  },
+  "signals": {
+    "tool_calls": 15,
+    "failed_tool_calls": 1,
+    "repeated_tool_calls": 2,
+    "parallel_groups": 0,
+    "rollback_count": 1
+  }
+}

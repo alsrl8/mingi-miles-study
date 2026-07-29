@@ -1,0 +1,47 @@
+---
+import '../styles/global.css';
+import { withBase } from '../lib/urls';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const homeHref = withBase('/');
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◎</text></svg>" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="site-header shell">
+      <a class="brand" href={homeHref} aria-label="Miles Learning Profile 홈">
+        <span class="brand-mark">M</span>
+        <span>
+          <strong>Learning Profile</strong>
+          <small>Interest before curriculum</small>
+        </span>
+      </a>
+      <div class="sync-state">
+        <span class="status-dot"></span>
+        이 브라우저에 자동 저장
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer shell">
+      <span>답변은 공개 저장소에 자동으로 기록되지 않습니다.</span>
+      <a href={homeHref}>처음으로</a>
+    </footer>
+  </body>
+</html>

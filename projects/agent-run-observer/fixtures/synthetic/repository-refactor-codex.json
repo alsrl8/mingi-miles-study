@@ -1,0 +1,256 @@
+{
+  "schema_version": "0.1",
+  "run_id": "run-repository-refactor-codex-001",
+  "scenario_id": "scenario-repository-refactor-001",
+  "engine": "codex",
+  "model": "mock-codex-reasoning",
+  "task": {
+    "title": "Extract duplicated retry policy without changing behavior",
+    "input_kind": "repository",
+    "success_criteria": [
+      "preserve retry semantics",
+      "remove duplication from three adapters",
+      "keep public API stable",
+      "pass tests and static analysis"
+    ]
+  },
+  "config": {
+    "reasoning_effort": "high",
+    "max_tool_calls": 28,
+    "parallelism": 3,
+    "approval_mode": "workspace-write"
+  },
+  "started_at": "2026-07-16T03:00:00Z",
+  "completed_at": "2026-07-16T03:00:31.600Z",
+  "duration_ms": 31600,
+  "status": "success",
+  "usage": {
+    "input_tokens": 9680,
+    "output_tokens": 2480,
+    "cached_input_tokens": 3160
+  },
+  "events": [
+    {
+      "event_id": "e01",
+      "sequence": 1,
+      "kind": "assistant",
+      "name": "plan_refactor",
+      "started_offset_ms": 0,
+      "duration_ms": 680,
+      "status": "success",
+      "summary": "Separated pattern discovery, behavior mapping, and test coverage checks."
+    },
+    {
+      "event_id": "e02",
+      "sequence": 2,
+      "kind": "tool_call",
+      "name": "inspect_http_adapter",
+      "parallel_group": "explore-1",
+      "started_offset_ms": 680,
+      "duration_ms": 1640,
+      "status": "success",
+      "arguments": {
+        "scope": "internal/httpadapter"
+      }
+    },
+    {
+      "event_id": "e03",
+      "sequence": 3,
+      "kind": "tool_call",
+      "name": "inspect_queue_adapter",
+      "parallel_group": "explore-1",
+      "started_offset_ms": 680,
+      "duration_ms": 1490,
+      "status": "success",
+      "arguments": {
+        "scope": "internal/queueadapter"
+      }
+    },
+    {
+      "event_id": "e04",
+      "sequence": 4,
+      "kind": "tool_call",
+      "name": "inspect_storage_adapter",
+      "parallel_group": "explore-1",
+      "started_offset_ms": 680,
+      "duration_ms": 1810,
+      "status": "success",
+      "arguments": {
+        "scope": "internal/storageadapter"
+      }
+    },
+    {
+      "event_id": "e05",
+      "sequence": 5,
+      "kind": "checkpoint",
+      "name": "merge_pattern_findings",
+      "started_offset_ms": 2490,
+      "duration_ms": 910,
+      "status": "success",
+      "summary": "All adapters share attempt counting and delay calculation; only retry classification differs."
+    },
+    {
+      "event_id": "e06",
+      "sequence": 6,
+      "kind": "tool_call",
+      "name": "run_baseline_tests",
+      "started_offset_ms": 3400,
+      "duration_ms": 5180,
+      "status": "success",
+      "arguments": {
+        "command": "go test ./..."
+      }
+    },
+    {
+      "event_id": "e07",
+      "sequence": 7,
+      "kind": "decision",
+      "name": "choose_policy_function",
+      "started_offset_ms": 8580,
+      "duration_ms": 840,
+      "status": "success",
+      "summary": "Use a small retry loop with an injected classification function instead of a generic framework."
+    },
+    {
+      "event_id": "e08",
+      "sequence": 8,
+      "kind": "tool_call",
+      "name": "apply_shared_retry",
+      "started_offset_ms": 9420,
+      "duration_ms": 2410,
+      "status": "success",
+      "arguments": {
+        "files": [
+          "internal/retry/retry.go",
+          "internal/httpadapter/client.go",
+          "internal/queueadapter/client.go",
+          "internal/storageadapter/client.go"
+        ]
+      }
+    },
+    {
+      "event_id": "e09",
+      "sequence": 9,
+      "kind": "tool_call",
+      "name": "add_policy_tests",
+      "started_offset_ms": 11830,
+      "duration_ms": 1980,
+      "status": "success",
+      "arguments": {
+        "files": ["internal/retry/retry_test.go"]
+      }
+    },
+    {
+      "event_id": "e10",
+      "sequence": 10,
+      "kind": "tool_call",
+      "name": "run_retry_tests",
+      "started_offset_ms": 13810,
+      "duration_ms": 2340,
+      "status": "failed",
+      "arguments": {
+        "command": "go test ./internal/retry"
+      },
+      "error": {
+        "category": "behavior_mismatch",
+        "message": "final attempt delay applied after terminal failure",
+        "retryable": false
+      }
+    },
+    {
+      "event_id": "e11",
+      "sequence": 11,
+      "kind": "decision",
+      "name": "correct_attempt_boundary",
+      "started_offset_ms": 16150,
+      "duration_ms": 480,
+      "status": "success",
+      "summary": "Move the delay before the next attempt rather than after the current failure."
+    },
+    {
+      "event_id": "e12",
+      "sequence": 12,
+      "kind": "tool_call",
+      "name": "apply_boundary_fix",
+      "started_offset_ms": 16630,
+      "duration_ms": 590,
+      "status": "success",
+      "arguments": {
+        "files": ["internal/retry/retry.go"]
+      }
+    },
+    {
+      "event_id": "e13",
+      "sequence": 13,
+      "kind": "tool_call",
+      "name": "run_retry_tests",
+      "started_offset_ms": 17220,
+      "duration_ms": 2150,
+      "status": "success",
+      "arguments": {
+        "command": "go test ./internal/retry"
+      }
+    },
+    {
+      "event_id": "e14",
+      "sequence": 14,
+      "kind": "tool_call",
+      "name": "run_full_tests",
+      "parallel_group": "verify-1",
+      "started_offset_ms": 19370,
+      "duration_ms": 5470,
+      "status": "success",
+      "arguments": {
+        "command": "go test ./..."
+      }
+    },
+    {
+      "event_id": "e15",
+      "sequence": 15,
+      "kind": "tool_call",
+      "name": "run_static_analysis",
+      "parallel_group": "verify-1",
+      "started_offset_ms": 19370,
+      "duration_ms": 3320,
+      "status": "success",
+      "arguments": {
+        "command": "go vet ./..."
+      }
+    },
+    {
+      "event_id": "e16",
+      "sequence": 16,
+      "kind": "checkpoint",
+      "name": "review_diff",
+      "started_offset_ms": 24840,
+      "duration_ms": 1890,
+      "status": "success",
+      "summary": "Public methods are unchanged and adapter-specific retry classification remains local."
+    },
+    {
+      "event_id": "e17",
+      "sequence": 17,
+      "kind": "assistant",
+      "name": "final_response",
+      "started_offset_ms": 26730,
+      "duration_ms": 4870,
+      "status": "success",
+      "summary": "Explained the extracted policy, preserved boundaries, and verification evidence."
+    }
+  ],
+  "outcome": {
+    "result": "refactored",
+    "changed_files": 5,
+    "lines_added": 146,
+    "lines_removed": 121,
+    "tests_passed": 92,
+    "tests_failed": 0
+  },
+  "signals": {
+    "tool_calls": 11,
+    "failed_tool_calls": 1,
+    "repeated_tool_calls": 1,
+    "parallel_groups": 2,
+    "rollback_count": 0
+  }
+}

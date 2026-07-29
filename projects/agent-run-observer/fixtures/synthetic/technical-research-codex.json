@@ -1,0 +1,206 @@
+{
+  "schema_version": "0.1",
+  "run_id": "run-technical-research-codex-001",
+  "scenario_id": "scenario-technical-research-001",
+  "engine": "codex",
+  "model": "mock-codex-research",
+  "task": {
+    "title": "Compare official support for Go debugging in two editors",
+    "input_kind": "web_research",
+    "success_criteria": [
+      "use primary sources",
+      "compare language server and debugger support",
+      "separate verified facts from inference",
+      "provide direct citations"
+    ]
+  },
+  "config": {
+    "reasoning_effort": "medium",
+    "max_tool_calls": 18,
+    "parallelism": 3,
+    "source_policy": "official-only"
+  },
+  "started_at": "2026-07-17T01:00:00Z",
+  "completed_at": "2026-07-17T01:00:15.800Z",
+  "duration_ms": 15800,
+  "status": "success",
+  "usage": {
+    "input_tokens": 5230,
+    "output_tokens": 1410,
+    "cached_input_tokens": 980
+  },
+  "events": [
+    {
+      "event_id": "e01",
+      "sequence": 1,
+      "kind": "decision",
+      "name": "set_source_policy",
+      "started_offset_ms": 0,
+      "duration_ms": 340,
+      "status": "success",
+      "summary": "Restrict evidence to Go, VS Code, Zed, and debugger project documentation."
+    },
+    {
+      "event_id": "e02",
+      "sequence": 2,
+      "kind": "tool_call",
+      "name": "search_go_editor_docs",
+      "parallel_group": "research-1",
+      "started_offset_ms": 340,
+      "duration_ms": 1510,
+      "status": "success",
+      "arguments": {
+        "domains": ["go.dev"],
+        "query": "Go editor gopls debugger support"
+      }
+    },
+    {
+      "event_id": "e03",
+      "sequence": 3,
+      "kind": "tool_call",
+      "name": "search_vscode_go_docs",
+      "parallel_group": "research-1",
+      "started_offset_ms": 340,
+      "duration_ms": 1380,
+      "status": "success",
+      "arguments": {
+        "domains": ["code.visualstudio.com", "github.com/golang"],
+        "query": "VS Code Go gopls Delve debugging"
+      }
+    },
+    {
+      "event_id": "e04",
+      "sequence": 4,
+      "kind": "tool_call",
+      "name": "search_zed_go_docs",
+      "parallel_group": "research-1",
+      "started_offset_ms": 340,
+      "duration_ms": 1660,
+      "status": "success",
+      "arguments": {
+        "domains": ["zed.dev"],
+        "query": "Zed Go gopls Delve"
+      }
+    },
+    {
+      "event_id": "e05",
+      "sequence": 5,
+      "kind": "tool_call",
+      "name": "open_primary_sources",
+      "started_offset_ms": 2000,
+      "duration_ms": 2380,
+      "status": "success",
+      "arguments": {
+        "urls": [
+          "https://go.dev/gopls/",
+          "https://code.visualstudio.com/docs/languages/go",
+          "https://zed.dev/docs/languages/go"
+        ]
+      }
+    },
+    {
+      "event_id": "e06",
+      "sequence": 6,
+      "kind": "tool_call",
+      "name": "find_debugging_claims",
+      "parallel_group": "extract-1",
+      "started_offset_ms": 4380,
+      "duration_ms": 970,
+      "status": "success",
+      "arguments": {
+        "source": "VS Code Go documentation",
+        "patterns": ["Delve", "breakpoint", "test"]
+      }
+    },
+    {
+      "event_id": "e07",
+      "sequence": 7,
+      "kind": "tool_call",
+      "name": "find_debugging_claims",
+      "parallel_group": "extract-1",
+      "started_offset_ms": 4380,
+      "duration_ms": 860,
+      "status": "success",
+      "arguments": {
+        "source": "Zed Go documentation",
+        "patterns": ["Delve", "debug", "test"]
+      }
+    },
+    {
+      "event_id": "e08",
+      "sequence": 8,
+      "kind": "checkpoint",
+      "name": "build_evidence_matrix",
+      "started_offset_ms": 5350,
+      "duration_ms": 1320,
+      "status": "success",
+      "summary": "Both use gopls; both document Delve support; VS Code has broader official extension workflow documentation."
+    },
+    {
+      "event_id": "e09",
+      "sequence": 9,
+      "kind": "decision",
+      "name": "separate_recommendation",
+      "started_offset_ms": 6670,
+      "duration_ms": 540,
+      "status": "success",
+      "summary": "Treat editor recommendation as inference based on documented features, not a primary-source fact."
+    },
+    {
+      "event_id": "e10",
+      "sequence": 10,
+      "kind": "tool_call",
+      "name": "verify_links",
+      "started_offset_ms": 7210,
+      "duration_ms": 1830,
+      "status": "success",
+      "arguments": {
+        "count": 4
+      }
+    },
+    {
+      "event_id": "e11",
+      "sequence": 11,
+      "kind": "assistant",
+      "name": "draft_answer",
+      "started_offset_ms": 9040,
+      "duration_ms": 3120,
+      "status": "success",
+      "summary": "Produced a concise feature comparison and labeled the recommendation."
+    },
+    {
+      "event_id": "e12",
+      "sequence": 12,
+      "kind": "checkpoint",
+      "name": "citation_audit",
+      "started_offset_ms": 12160,
+      "duration_ms": 980,
+      "status": "success",
+      "summary": "Every changing technical claim has a direct primary-source link."
+    },
+    {
+      "event_id": "e13",
+      "sequence": 13,
+      "kind": "assistant",
+      "name": "final_response",
+      "started_offset_ms": 13140,
+      "duration_ms": 2660,
+      "status": "success",
+      "summary": "Recommended one editor while retaining the verified comparison."
+    }
+  ],
+  "outcome": {
+    "result": "answered",
+    "sources_opened": 4,
+    "primary_sources": 4,
+    "citations_used": 4,
+    "unsupported_claims": 0
+  },
+  "signals": {
+    "tool_calls": 7,
+    "failed_tool_calls": 0,
+    "repeated_tool_calls": 1,
+    "parallel_groups": 2,
+    "fallback_count": 0
+  }
+}

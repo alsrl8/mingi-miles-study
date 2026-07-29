@@ -1,0 +1,200 @@
+{
+  "schema_version": "0.1",
+  "run_id": "run-test-failure-codex-001",
+  "scenario_id": "scenario-test-failure-001",
+  "engine": "codex",
+  "model": "mock-codex-reasoning",
+  "task": {
+    "title": "Diagnose and fix a failing repository test",
+    "input_kind": "repository",
+    "success_criteria": [
+      "identify the failing assertion",
+      "change only the responsible module",
+      "pass the targeted test",
+      "pass the full test suite"
+    ]
+  },
+  "config": {
+    "reasoning_effort": "high",
+    "max_tool_calls": 20,
+    "parallelism": 2,
+    "approval_mode": "workspace-write"
+  },
+  "started_at": "2026-07-15T09:00:00Z",
+  "completed_at": "2026-07-15T09:00:12.400Z",
+  "duration_ms": 12400,
+  "status": "success",
+  "usage": {
+    "input_tokens": 4820,
+    "output_tokens": 1330,
+    "cached_input_tokens": 1200
+  },
+  "events": [
+    {
+      "event_id": "e01",
+      "sequence": 1,
+      "kind": "assistant",
+      "name": "scope_failure",
+      "started_offset_ms": 0,
+      "duration_ms": 420,
+      "status": "success",
+      "summary": "Classified the request as a targeted diagnosis and preserved unrelated changes."
+    },
+    {
+      "event_id": "e02",
+      "sequence": 2,
+      "kind": "tool_call",
+      "name": "read_project_instructions",
+      "started_offset_ms": 420,
+      "duration_ms": 180,
+      "status": "success",
+      "arguments": {
+        "paths": ["AGENTS.md", "README.md", "package.json"]
+      }
+    },
+    {
+      "event_id": "e03",
+      "parent_event_id": "e02",
+      "sequence": 3,
+      "kind": "tool_result",
+      "name": "read_project_instructions_result",
+      "started_offset_ms": 600,
+      "duration_ms": 60,
+      "status": "success",
+      "summary": "Found npm test commands and module ownership rules."
+    },
+    {
+      "event_id": "e04",
+      "sequence": 4,
+      "kind": "tool_call",
+      "name": "run_targeted_test",
+      "started_offset_ms": 660,
+      "duration_ms": 2480,
+      "status": "failed",
+      "arguments": {
+        "command": "npm test -- parser.test.ts"
+      },
+      "error": {
+        "category": "assertion_failure",
+        "message": "expected 3 normalized events, received 2",
+        "retryable": false
+      }
+    },
+    {
+      "event_id": "e05",
+      "sequence": 5,
+      "kind": "decision",
+      "name": "trace_missing_event",
+      "started_offset_ms": 3140,
+      "duration_ms": 360,
+      "status": "success",
+      "summary": "Follow the failed fixture through the normalizer rather than scanning the repository broadly."
+    },
+    {
+      "event_id": "e06",
+      "sequence": 6,
+      "kind": "tool_call",
+      "name": "search_symbol",
+      "started_offset_ms": 3500,
+      "duration_ms": 410,
+      "status": "success",
+      "arguments": {
+        "query": "normalizeToolResult",
+        "scope": "src/parser"
+      }
+    },
+    {
+      "event_id": "e07",
+      "sequence": 7,
+      "kind": "tool_call",
+      "name": "read_adjacent_code",
+      "started_offset_ms": 3910,
+      "duration_ms": 760,
+      "status": "success",
+      "arguments": {
+        "paths": ["src/parser/normalize.ts", "src/parser/types.ts", "src/parser/normalize.test.ts"]
+      }
+    },
+    {
+      "event_id": "e08",
+      "sequence": 8,
+      "kind": "decision",
+      "name": "identify_guard_error",
+      "started_offset_ms": 4670,
+      "duration_ms": 500,
+      "status": "success",
+      "summary": "A truthiness guard drops valid tool results whose output is an empty string."
+    },
+    {
+      "event_id": "e09",
+      "sequence": 9,
+      "kind": "tool_call",
+      "name": "apply_patch",
+      "started_offset_ms": 5170,
+      "duration_ms": 620,
+      "status": "success",
+      "arguments": {
+        "files": ["src/parser/normalize.ts", "src/parser/normalize.test.ts"],
+        "change": "Check field presence instead of output truthiness and add an empty-output case."
+      }
+    },
+    {
+      "event_id": "e10",
+      "sequence": 10,
+      "kind": "tool_call",
+      "name": "run_targeted_test",
+      "started_offset_ms": 5790,
+      "duration_ms": 1840,
+      "status": "success",
+      "arguments": {
+        "command": "npm test -- parser.test.ts"
+      }
+    },
+    {
+      "event_id": "e11",
+      "sequence": 11,
+      "kind": "tool_call",
+      "name": "run_full_suite",
+      "started_offset_ms": 7630,
+      "duration_ms": 3920,
+      "status": "success",
+      "arguments": {
+        "command": "npm test"
+      }
+    },
+    {
+      "event_id": "e12",
+      "sequence": 12,
+      "kind": "checkpoint",
+      "name": "verify_scope",
+      "started_offset_ms": 11550,
+      "duration_ms": 420,
+      "status": "success",
+      "summary": "Two intended files changed; unrelated working tree entries remained untouched."
+    },
+    {
+      "event_id": "e13",
+      "sequence": 13,
+      "kind": "assistant",
+      "name": "final_response",
+      "started_offset_ms": 11970,
+      "duration_ms": 430,
+      "status": "success",
+      "summary": "Reported the guard bug, changed files, and both passing test commands."
+    }
+  ],
+  "outcome": {
+    "result": "fixed",
+    "changed_files": 2,
+    "tests_passed": 48,
+    "tests_failed": 0,
+    "final_answer_chars": 512
+  },
+  "signals": {
+    "tool_calls": 7,
+    "failed_tool_calls": 1,
+    "repeated_tool_calls": 1,
+    "rollback_count": 0,
+    "human_interventions": 0
+  }
+}

@@ -1,0 +1,188 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import questions from '../data/interview.json';
+import { withBase } from '../lib/urls';
+
+const profileHref = withBase('/profile/');
+---
+
+<BaseLayout
+  title="학습자 인터뷰 · Miles Learning Profile"
+  description="한 질문씩 진행하는 학습자 발견 인터뷰"
+>
+  <section class="interview shell">
+    <header class="interview-progress">
+      <div>
+        <span class="eyebrow" data-stage>{questions[0].stage}</span>
+        <strong><span data-current>1</span> / {questions.length}</strong>
+      </div>
+      <div
+        class="progress-track"
+        role="progressbar"
+        aria-label="인터뷰 진행률"
+        aria-valuemin="0"
+        aria-valuemax={questions.length}
+        aria-valuenow="1"
+        data-progress
+      >
+        <span></span>
+      </div>
+    </header>
+
+    <div class="question-stack">
+      {questions.map((question, index) => (
+        <article
+          class="question-card"
+          data-question
+          data-id={question.id}
+          data-index={index}
+          data-stage={question.stage}
+          hidden={index !== 0}
+        >
+          <span class="question-number">QUESTION {String(index + 1).padStart(2, '0')}</span>
+          <h1>{question.title}</h1>
+          <p class="prompt">{question.prompt}</p>
+          <p class="help">{question.help}</p>
+          <label>
+            <span>내 답변</span>
+            <textarea
+              rows="8"
+              placeholder={question.placeholder}
+              data-answer
+              aria-describedby={`purpose-${question.id}`}
+            ></textarea>
+          </label>
+          <details class="purpose" id={`purpose-${question.id}`}>
+            <summary>이 질문을 하는 이유</summary>
+            <p>{question.purpose}</p>
+          </details>
+        </article>
+      ))}
+    </div>
+
+    <p class="save-state" data-save-state role="status">
+      입력하면 이 브라우저에 자동 저장됩니다.
+    </p>
+
+    <nav class="interview-actions" aria-label="인터뷰 이동">
+      <button class="text-button" type="button" data-previous>이전</button>
+      <button class="text-button" type="button" data-skip>지금은 건너뛰기</button>
+      <button class="primary-button" type="button" data-next>
+        다음 질문 <span aria-hidden="true">→</span>
+      </button>
+    </nav>
+  </section>
+</BaseLayout>
+
+<script is:inline define:vars={{ profileHref }}>
+  window.__MILES_PROFILE_HREF__ = profileHref;
+</script>
+
+<script>
+  import {
+    loadInterviewState,
+    saveInterviewState,
+    skipQuestion,
+    updateAnswer,
+  } from '../lib/interview';
+
+  const cards = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-question]'),
+  );
+  const previous = document.querySelector<HTMLButtonElement>('[data-previous]');
+  const next = document.querySelector<HTMLButtonElement>('[data-next]');
+  const skip = document.querySelector<HTMLButtonElement>('[data-skip]');
+  const current = document.querySelector<HTMLElement>('[data-current]');
+  const stage = document.querySelector<HTMLElement>('[data-stage]');
+  const progress = document.querySelector<HTMLElement>('[data-progress]');
+  const progressFill = progress?.querySelector<HTMLElement>('span');
+  const saveState = document.querySelector<HTMLElement>('[data-save-state]');
+  const loaded = loadInterviewState();
+  let state = loaded.state;
+  let activeIndex = Math.min(state.currentIndex, cards.length - 1);
+  let saveTimer: number | undefined;
+
+  function activeCard() {
+    return cards[activeIndex];
+  }
+
+  function show(index: number) {
+    activeIndex = Math.max(0, Math.min(index, cards.length - 1));
+    state = { ...state, currentIndex: activeIndex };
+    saveInterviewState(state);
+
+    cards.forEach((card, cardIndex) => {
+      card.hidden = cardIndex !== activeIndex;
+    });
+
+    const card = activeCard();
+    const id = card.dataset.id ?? '';
+    const textarea = card.querySelector<HTMLTextAreaElement>('[data-answer]');
+    if (textarea) textarea.value = state.answers[id] ?? '';
+    if (current) current.textContent = String(activeIndex + 1);
+    if (stage) stage.textContent = card.dataset.stage ?? '';
+    if (previous) previous.disabled = activeIndex === 0;
+    if (next) {
+      next.innerHTML =
+        activeIndex === cards.length - 1
+          ? '답변 검토하기 <span aria-hidden="true">→</span>'
+          : '다음 질문 <span aria-hidden="true">→</span>';
+    }
+    if (progress && progressFill) {
+      progress.setAttribute('aria-valuenow', String(activeIndex + 1));
+      progressFill.style.width = `${((activeIndex + 1) / cards.length) * 100}%`;
+    }
+    textarea?.focus();
+  }
+
+  function persistAnswer() {
+    const card = activeCard();
+    const id = card.dataset.id ?? '';
+    const textarea = card.querySelector<HTMLTextAreaElement>('[data-answer]');
+    state = updateAnswer(state, id, textarea?.value ?? '', activeIndex);
+    const persisted = saveInterviewState(state);
+    if (saveState) {
+      saveState.textContent = persisted
+        ? '저장됨 · 언제든 이 화면을 닫아도 됩니다.'
+        : '저장할 수 없습니다 · 이 탭을 닫기 전에 답변을 복사해 주세요.';
+      saveState.classList.toggle('is-warning', !persisted);
+    }
+  }
+
+  cards.forEach((card) => {
+    card
+      .querySelector<HTMLTextAreaElement>('[data-answer]')
+      ?.addEventListener('input', () => {
+        if (saveState) saveState.textContent = '저장 중…';
+        window.clearTimeout(saveTimer);
+        saveTimer = window.setTimeout(persistAnswer, 350);
+      });
+  });
+
+  previous?.addEventListener('click', () => {
+    persistAnswer();
+    show(activeIndex - 1);
+  });
+
+  next?.addEventListener('click', () => {
+    persistAnswer();
+    if (activeIndex === cards.length - 1) {
+      state = { ...state, completedAt: new Date().toISOString() };
+      saveInterviewState(state);
+      window.location.href =
+        (window as typeof window & { __MILES_PROFILE_HREF__?: string })
+          .__MILES_PROFILE_HREF__ ?? '/profile/';
+      return;
+    }
+    show(activeIndex + 1);
+  });
+
+  skip?.addEventListener('click', () => {
+    const id = activeCard().dataset.id ?? '';
+    state = skipQuestion(state, id, Math.min(activeIndex + 1, cards.length - 1));
+    saveInterviewState(state);
+    show(Math.min(activeIndex + 1, cards.length - 1));
+  });
+
+  show(activeIndex);
+</script>

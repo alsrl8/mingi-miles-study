@@ -57,6 +57,22 @@ GitHub Pages 배포, Supabase 기반 기기 간 progress 동기화 방법은
 아닙니다. 그 표현은 인증된 저장소와 사용자별 접근 제어가 연결된 뒤에만
 사용합니다.
 
+## Learner interview Web UI
+
+`web/`에는 학습 주제를 고르기 전에 관심, 지식 구조, 문제 취향, 학습
+조건을 한 질문씩 확인하는 Astro UI가 있습니다. 답변은 공개 저장소에
+자동으로 기록되지 않고 현재 브라우저의 `localStorage`에만 저장됩니다.
+검토 화면에서 Markdown 요약을 복사하거나 JSON으로 직접 내보낼 수 있습니다.
+
+```bash
+npm --prefix web ci
+npm --prefix web run dev
+```
+
+브라우저에서 표시된 로컬 주소를 열고 인터뷰를 시작합니다. 다른 기기에서
+이어가려면 JSON을 직접 옮겨야 하며, 현재 구현은 기기 간 동기화를 제공하지
+않습니다.
+
 ## Setup
 
 ```bash

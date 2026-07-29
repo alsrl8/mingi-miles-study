@@ -1,0 +1,254 @@
+{
+  "schema_version": "0.1",
+  "run_id": "run-test-failure-claude-001",
+  "scenario_id": "scenario-test-failure-001",
+  "engine": "claude",
+  "model": "mock-claude-reasoning",
+  "task": {
+    "title": "Diagnose and fix a failing repository test",
+    "input_kind": "repository",
+    "success_criteria": [
+      "identify the failing assertion",
+      "change only the responsible module",
+      "pass the targeted test",
+      "pass the full test suite"
+    ]
+  },
+  "config": {
+    "reasoning_effort": "adaptive",
+    "max_tool_calls": 30,
+    "parallelism": 1,
+    "approval_mode": "workspace-write"
+  },
+  "started_at": "2026-07-15T09:05:00Z",
+  "completed_at": "2026-07-15T09:05:21.900Z",
+  "duration_ms": 21900,
+  "status": "success_with_rework",
+  "usage": {
+    "input_tokens": 7310,
+    "output_tokens": 2010,
+    "cached_input_tokens": 800
+  },
+  "events": [
+    {
+      "event_id": "e01",
+      "sequence": 1,
+      "kind": "assistant",
+      "name": "initial_hypothesis",
+      "started_offset_ms": 0,
+      "duration_ms": 730,
+      "status": "success",
+      "summary": "Hypothesized a fixture generation problem before running the failing test."
+    },
+    {
+      "event_id": "e02",
+      "sequence": 2,
+      "kind": "tool_call",
+      "name": "list_repository",
+      "started_offset_ms": 730,
+      "duration_ms": 580,
+      "status": "success",
+      "arguments": {
+        "depth": 4
+      }
+    },
+    {
+      "event_id": "e03",
+      "sequence": 3,
+      "kind": "tool_call",
+      "name": "search_tests",
+      "started_offset_ms": 1310,
+      "duration_ms": 870,
+      "status": "success",
+      "arguments": {
+        "query": "normalize",
+        "scope": "."
+      }
+    },
+    {
+      "event_id": "e04",
+      "sequence": 4,
+      "kind": "tool_call",
+      "name": "run_full_suite",
+      "started_offset_ms": 2180,
+      "duration_ms": 4210,
+      "status": "failed",
+      "arguments": {
+        "command": "npm test"
+      },
+      "error": {
+        "category": "assertion_failure",
+        "message": "expected 3 normalized events, received 2",
+        "retryable": false
+      }
+    },
+    {
+      "event_id": "e05",
+      "sequence": 5,
+      "kind": "tool_call",
+      "name": "read_fixture_generator",
+      "started_offset_ms": 6390,
+      "duration_ms": 940,
+      "status": "success",
+      "arguments": {
+        "paths": ["scripts/generate-fixtures.ts", "fixtures/tool-results.json"]
+      }
+    },
+    {
+      "event_id": "e06",
+      "sequence": 6,
+      "kind": "decision",
+      "name": "change_fixture",
+      "started_offset_ms": 7330,
+      "duration_ms": 640,
+      "status": "success",
+      "summary": "Assumed the empty tool output fixture was invalid and should be removed."
+    },
+    {
+      "event_id": "e07",
+      "sequence": 7,
+      "kind": "tool_call",
+      "name": "apply_patch",
+      "started_offset_ms": 7970,
+      "duration_ms": 510,
+      "status": "success",
+      "arguments": {
+        "files": ["fixtures/tool-results.json"],
+        "change": "Remove empty-output record."
+      }
+    },
+    {
+      "event_id": "e08",
+      "sequence": 8,
+      "kind": "tool_call",
+      "name": "run_targeted_test",
+      "started_offset_ms": 8480,
+      "duration_ms": 1750,
+      "status": "failed",
+      "arguments": {
+        "command": "npm test -- parser.test.ts"
+      },
+      "error": {
+        "category": "fixture_contract_failure",
+        "message": "fixture must preserve empty successful tool output",
+        "retryable": false
+      }
+    },
+    {
+      "event_id": "e09",
+      "sequence": 9,
+      "kind": "decision",
+      "name": "rollback_fixture_change",
+      "started_offset_ms": 10230,
+      "duration_ms": 430,
+      "status": "success",
+      "summary": "Recognized that empty output is valid and restored the fixture."
+    },
+    {
+      "event_id": "e10",
+      "sequence": 10,
+      "kind": "tool_call",
+      "name": "apply_patch",
+      "started_offset_ms": 10660,
+      "duration_ms": 390,
+      "status": "success",
+      "arguments": {
+        "files": ["fixtures/tool-results.json"],
+        "change": "Restore empty-output record."
+      }
+    },
+    {
+      "event_id": "e11",
+      "sequence": 11,
+      "kind": "tool_call",
+      "name": "read_parser",
+      "started_offset_ms": 11050,
+      "duration_ms": 980,
+      "status": "success",
+      "arguments": {
+        "paths": ["src/parser/normalize.ts", "src/parser/types.ts"]
+      }
+    },
+    {
+      "event_id": "e12",
+      "sequence": 12,
+      "kind": "decision",
+      "name": "identify_guard_error",
+      "started_offset_ms": 12030,
+      "duration_ms": 520,
+      "status": "success",
+      "summary": "Found the truthiness guard that drops empty successful output."
+    },
+    {
+      "event_id": "e13",
+      "sequence": 13,
+      "kind": "tool_call",
+      "name": "apply_patch",
+      "started_offset_ms": 12550,
+      "duration_ms": 690,
+      "status": "success",
+      "arguments": {
+        "files": ["src/parser/normalize.ts", "src/parser/normalize.test.ts"],
+        "change": "Use field presence and add regression coverage."
+      }
+    },
+    {
+      "event_id": "e14",
+      "sequence": 14,
+      "kind": "tool_call",
+      "name": "run_targeted_test",
+      "started_offset_ms": 13240,
+      "duration_ms": 1800,
+      "status": "success",
+      "arguments": {
+        "command": "npm test -- parser.test.ts"
+      }
+    },
+    {
+      "event_id": "e15",
+      "sequence": 15,
+      "kind": "tool_call",
+      "name": "run_full_suite",
+      "started_offset_ms": 15040,
+      "duration_ms": 4360,
+      "status": "success",
+      "arguments": {
+        "command": "npm test"
+      }
+    },
+    {
+      "event_id": "e16",
+      "sequence": 16,
+      "kind": "checkpoint",
+      "name": "inspect_diff",
+      "started_offset_ms": 19400,
+      "duration_ms": 980,
+      "status": "success",
+      "summary": "Confirmed the fixture rollback and two intended source changes."
+    },
+    {
+      "event_id": "e17",
+      "sequence": 17,
+      "kind": "assistant",
+      "name": "final_response",
+      "started_offset_ms": 20380,
+      "duration_ms": 1520,
+      "status": "success",
+      "summary": "Reported the final bug and tests, including the discarded fixture hypothesis."
+    }
+  ],
+  "outcome": {
+    "result": "fixed",
+    "changed_files": 2,
+    "tests_passed": 48,
+    "tests_failed": 0,
+    "final_answer_chars": 1040
+  },
+  "signals": {
+    "tool_calls": 11,
+    "failed_tool_calls": 2,
+    "repeated_tool_calls": 3,
+    "rollback_count": 1,
+    "human_interventions": 0
+  }
+}

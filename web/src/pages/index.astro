@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import questions from '../data/interview.json';
+import { withBase } from '../lib/urls';
+
+const interviewHref = withBase('/interview/');
+const profileHref = withBase('/profile/');
+---
+
+<BaseLayout
+  title="Miles Learning Profile"
+  description="관심과 지식 구조를 천천히 발견하는 개인 학습 인터뷰"
+>
+  <section class="home shell">
+    <div class="home-copy">
+      <span class="eyebrow">LEARNER DISCOVERY</span>
+      <h1>무엇을 공부할지보다,<br /><em>왜 끌리는지</em> 먼저 봅니다.</h1>
+      <p>
+        한 번에 질문 하나만 답하세요. 짧게 멈춰도 이 브라우저에 자동
+        저장되며, 답변에서 확인된 사실과 아직 확인하지 못한 추론을
+        구분합니다.
+      </p>
+      <div class="actions">
+        <a class="primary-button" href={interviewHref} data-resume-link>
+          인터뷰 시작하기 <span aria-hidden="true">→</span>
+        </a>
+        <a class="secondary-button" href={profileHref}>현재 답변 검토</a>
+      </div>
+      <p class="privacy-note">
+        개인 답변은 Git에 기록되지 않습니다. 현재 브라우저에만 저장되며
+        원할 때 직접 내보낼 수 있습니다.
+      </p>
+    </div>
+
+    <aside class="overview-card" aria-label="인터뷰 개요">
+      <div class="overview-head">
+        <span>진행 방식</span>
+        <strong>{questions.length}개 질문</strong>
+      </div>
+      <ol>
+        <li><span>01</span><div><strong>한 질문씩</strong><small>다른 일을 하다가 돌아와도 맥락을 잃지 않습니다.</small></div></li>
+        <li><span>02</span><div><strong>이유가 보이게</strong><small>각 질문이 무엇을 판단하는지 바로 확인합니다.</small></div></li>
+        <li><span>03</span><div><strong>단정하지 않게</strong><small>사실, 잠정 해석, 미확인 영역을 나눕니다.</small></div></li>
+        <li><span>04</span><div><strong>직접 승인</strong><small>최종 프로필은 Miles가 검토한 뒤에만 기준이 됩니다.</small></div></li>
+      </ol>
+      <div class="saved-progress" data-saved-progress hidden>
+        <span class="status-dot"></span>
+        <span data-progress-copy></span>
+      </div>
+    </aside>
+  </section>
+</BaseLayout>
+
+<script>
+  import { answeredCount, loadInterviewState } from '../lib/interview';
+
+  const { state } = loadInterviewState();
+  const count = answeredCount(state);
+  const progress = document.querySelector<HTMLElement>('[data-saved-progress]');
+  const copy = document.querySelector<HTMLElement>('[data-progress-copy]');
+  const resume = document.querySelector<HTMLAnchorElement>('[data-resume-link]');
+
+  if (count > 0 && progress && copy && resume) {
+    progress.hidden = false;
+    copy.textContent = `${count}개 답변이 저장되어 있습니다.`;
+    resume.childNodes[0].textContent = '인터뷰 이어서 하기 ';
+  }
+</script>

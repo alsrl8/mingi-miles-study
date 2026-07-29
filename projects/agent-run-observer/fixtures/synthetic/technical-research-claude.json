@@ -1,0 +1,289 @@
+{
+  "schema_version": "0.1",
+  "run_id": "run-technical-research-claude-001",
+  "scenario_id": "scenario-technical-research-001",
+  "engine": "claude",
+  "model": "mock-claude-research",
+  "task": {
+    "title": "Compare official support for Go debugging in two editors",
+    "input_kind": "web_research",
+    "success_criteria": [
+      "use primary sources",
+      "compare language server and debugger support",
+      "separate verified facts from inference",
+      "provide direct citations"
+    ]
+  },
+  "config": {
+    "reasoning_effort": "adaptive",
+    "max_tool_calls": 24,
+    "parallelism": 2,
+    "source_policy": "official-preferred"
+  },
+  "started_at": "2026-07-17T01:10:00Z",
+  "completed_at": "2026-07-17T01:10:27.500Z",
+  "duration_ms": 27500,
+  "status": "partial_success",
+  "usage": {
+    "input_tokens": 8360,
+    "output_tokens": 2260,
+    "cached_input_tokens": 640
+  },
+  "events": [
+    {
+      "event_id": "e01",
+      "sequence": 1,
+      "kind": "assistant",
+      "name": "frame_research",
+      "started_offset_ms": 0,
+      "duration_ms": 610,
+      "status": "success",
+      "summary": "Planned to compare completion, debugging, ecosystem, and performance."
+    },
+    {
+      "event_id": "e02",
+      "sequence": 2,
+      "kind": "tool_call",
+      "name": "broad_web_search",
+      "started_offset_ms": 610,
+      "duration_ms": 1720,
+      "status": "success",
+      "arguments": {
+        "query": "best Go editor VS Code vs Zed debugging performance"
+      }
+    },
+    {
+      "event_id": "e03",
+      "sequence": 3,
+      "kind": "tool_call",
+      "name": "open_community_comparison",
+      "started_offset_ms": 2330,
+      "duration_ms": 1460,
+      "status": "failed",
+      "arguments": {
+        "source_type": "community_blog"
+      },
+      "error": {
+        "category": "access_denied",
+        "message": "page blocked automated access",
+        "retryable": true
+      }
+    },
+    {
+      "event_id": "e04",
+      "sequence": 4,
+      "kind": "decision",
+      "name": "fallback_to_search_snippets",
+      "started_offset_ms": 3790,
+      "duration_ms": 430,
+      "status": "success",
+      "summary": "Retained snippet notes temporarily and searched for official confirmation."
+    },
+    {
+      "event_id": "e05",
+      "sequence": 5,
+      "kind": "tool_call",
+      "name": "search_vscode_official",
+      "parallel_group": "research-1",
+      "started_offset_ms": 4220,
+      "duration_ms": 1640,
+      "status": "success",
+      "arguments": {
+        "domains": ["code.visualstudio.com"],
+        "query": "Go debugging Delve"
+      }
+    },
+    {
+      "event_id": "e06",
+      "sequence": 6,
+      "kind": "tool_call",
+      "name": "search_zed_official",
+      "parallel_group": "research-1",
+      "started_offset_ms": 4220,
+      "duration_ms": 1830,
+      "status": "success",
+      "arguments": {
+        "domains": ["zed.dev"],
+        "query": "Go language support debugging"
+      }
+    },
+    {
+      "event_id": "e07",
+      "sequence": 7,
+      "kind": "tool_call",
+      "name": "open_vscode_docs",
+      "started_offset_ms": 6050,
+      "duration_ms": 1270,
+      "status": "success",
+      "arguments": {
+        "url": "https://code.visualstudio.com/docs/languages/go"
+      }
+    },
+    {
+      "event_id": "e08",
+      "sequence": 8,
+      "kind": "tool_call",
+      "name": "open_zed_landing_page",
+      "started_offset_ms": 7320,
+      "duration_ms": 1160,
+      "status": "success",
+      "arguments": {
+        "url": "https://zed.dev/languages/go"
+      }
+    },
+    {
+      "event_id": "e09",
+      "sequence": 9,
+      "kind": "assistant",
+      "name": "draft_feature_matrix",
+      "started_offset_ms": 8480,
+      "duration_ms": 1890,
+      "status": "success",
+      "summary": "Drafted a comparison but mixed an official feature claim with an uncited performance impression."
+    },
+    {
+      "event_id": "e10",
+      "sequence": 10,
+      "kind": "checkpoint",
+      "name": "detect_source_gap",
+      "started_offset_ms": 10370,
+      "duration_ms": 620,
+      "status": "success",
+      "summary": "Zed debugger detail and editor performance claims need stronger sources."
+    },
+    {
+      "event_id": "e11",
+      "sequence": 11,
+      "kind": "tool_call",
+      "name": "search_zed_debug_docs",
+      "started_offset_ms": 10990,
+      "duration_ms": 1580,
+      "status": "success",
+      "arguments": {
+        "domains": ["zed.dev"],
+        "query": "Zed Go Delve debug tests"
+      }
+    },
+    {
+      "event_id": "e12",
+      "sequence": 12,
+      "kind": "tool_call",
+      "name": "open_zed_go_docs",
+      "started_offset_ms": 12570,
+      "duration_ms": 1330,
+      "status": "success",
+      "arguments": {
+        "url": "https://zed.dev/docs/languages/go"
+      }
+    },
+    {
+      "event_id": "e13",
+      "sequence": 13,
+      "kind": "tool_call",
+      "name": "search_editor_performance",
+      "started_offset_ms": 13900,
+      "duration_ms": 1440,
+      "status": "success",
+      "arguments": {
+        "query": "Zed VS Code startup performance benchmark"
+      }
+    },
+    {
+      "event_id": "e14",
+      "sequence": 14,
+      "kind": "decision",
+      "name": "drop_performance_claim",
+      "started_offset_ms": 15340,
+      "duration_ms": 410,
+      "status": "success",
+      "summary": "No comparable primary benchmark was found, so the performance ranking was removed."
+    },
+    {
+      "event_id": "e15",
+      "sequence": 15,
+      "kind": "tool_call",
+      "name": "search_gopls_docs",
+      "started_offset_ms": 15750,
+      "duration_ms": 1190,
+      "status": "success",
+      "arguments": {
+        "domains": ["go.dev"],
+        "query": "gopls supported editors"
+      }
+    },
+    {
+      "event_id": "e16",
+      "sequence": 16,
+      "kind": "tool_call",
+      "name": "open_gopls_docs",
+      "started_offset_ms": 16940,
+      "duration_ms": 980,
+      "status": "success",
+      "arguments": {
+        "url": "https://go.dev/gopls/"
+      }
+    },
+    {
+      "event_id": "e17",
+      "sequence": 17,
+      "kind": "assistant",
+      "name": "revise_answer",
+      "started_offset_ms": 17920,
+      "duration_ms": 2940,
+      "status": "success",
+      "summary": "Rewrote the comparison around gopls, Delve, and documented workflows."
+    },
+    {
+      "event_id": "e18",
+      "sequence": 18,
+      "kind": "tool_call",
+      "name": "verify_links",
+      "started_offset_ms": 20860,
+      "duration_ms": 1760,
+      "status": "partial",
+      "arguments": {
+        "count": 5
+      },
+      "error": {
+        "category": "redirect",
+        "message": "one VS Code extension link redirected to a generic marketplace page",
+        "retryable": true
+      }
+    },
+    {
+      "event_id": "e19",
+      "sequence": 19,
+      "kind": "checkpoint",
+      "name": "citation_audit",
+      "started_offset_ms": 22620,
+      "duration_ms": 1220,
+      "status": "partial",
+      "summary": "Core claims are supported; one ecosystem comparison remains an explicit inference."
+    },
+    {
+      "event_id": "e20",
+      "sequence": 20,
+      "kind": "assistant",
+      "name": "final_response",
+      "started_offset_ms": 23840,
+      "duration_ms": 3660,
+      "status": "success",
+      "summary": "Delivered a supported comparison and labeled the ecosystem judgment as inference."
+    }
+  ],
+  "outcome": {
+    "result": "answered",
+    "sources_opened": 6,
+    "primary_sources": 4,
+    "citations_used": 4,
+    "unsupported_claims": 0,
+    "explicit_inferences": 1
+  },
+  "signals": {
+    "tool_calls": 12,
+    "failed_tool_calls": 1,
+    "repeated_tool_calls": 4,
+    "parallel_groups": 1,
+    "fallback_count": 2
+  }
+}
