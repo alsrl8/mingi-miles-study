@@ -1,9 +1,9 @@
 ---
 id: progress-current-agent-run-observer
 created: 2026-07-29
-updated: 2026-07-31
+updated: 2026-08-03
 status: active
-tags: [go, project-based-learning, ai-agents]
+tags: [go, project-based-learning, ai-agents, helm, kubernetes]
 source: repository-evidence
 visibility: public
 subject: Project-based Go development
@@ -75,8 +75,31 @@ the converted event count equals the source event count, and one representative
 event field is preserved. Run `go fmt ./...`, `go test ./...`, and `go vet ./...`
 from the project directory.
 
+## Side track: helm
+
+The frontmatter `track` above refers to the primary track. A second, smaller
+track opened on 2026-08-03 at Miles's request: a brief orientation on Helm,
+covering why it was created, what role it plays, and what a chart contains.
+
+Verified activity: `topics/helm-charts-purpose-and-role.md` was written from
+the public Helm documentation and the Helm 4 release announcement. Its recall
+check has been posed and no answer is recorded.
+
+Mastery state: `learning`. Reading an explanation is not evidence of anything
+beyond that. No assignment, assessment, or artifact exists for this track.
+
+Stopped at: the recall check in that topic, asking what Helm provides over two
+directories of plain YAML applied with `kubectl apply -f`, and what it does not
+improve on.
+
+Next action for this track: Miles answers the recall check. If he wants the
+track to continue past orientation, the next smallest unit is writing one
+minimal chart by hand and rendering it with `helm template`, since that
+separates the templating job from the release job in a single observable step.
+
 ## Supporting repository paths
 
+- Helm orientation topic: `topics/helm-charts-purpose-and-role.md`
 - Project requirements: `projects/agent-run-observer/README.md`
 - Project agent instructions: `projects/agent-run-observer/AGENTS.md`
 - Go module: `projects/agent-run-observer/go.mod`
