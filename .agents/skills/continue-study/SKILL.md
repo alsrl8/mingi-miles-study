@@ -9,9 +9,37 @@ Use the repository as the durable learning context. Carry Miles from the exact
 stopping point through one useful learning step, then leave enough evidence for
 another device or agent to continue.
 
+## Local adaptations (filled in per installed copy only, never in canonical)
+
+This file at `.agents/skills/continue-study/` inside the repository is
+canonical. Every installed copy — on any device, for any agent — adds its own
+version of this section directly below this heading, and nowhere else in the
+file:
+
+- Local clone path
+- Remote source of truth (the repo URL, restated for convenience)
+- `Synced at commit: <hash> (<date>)` — the canonical commit at path
+  `.agents/skills/continue-study/` this installed copy last adopted
+
+## Stay current with canonical
+
+Before anything else in a session that uses this skill:
+
+1. Run `git -C <local clone path> log -1 --format=%H -- .agents/skills/continue-study/`
+   and compare the result to this file's own `Synced at commit` value above.
+2. If they match, proceed normally.
+3. If they differ, resync first: open the canonical files at that path in the
+   clone, diff them against this installed copy, adopt every change except the
+   "Local adaptations" section itself, then update `Synced at commit` to the
+   new hash and date.
+4. Mention what changed, briefly, at the point it's relevant in this session's
+   report. This step is what makes a skill change reach every device and agent
+   without Miles telling each one by hand.
+
 ## Start safely
 
-1. Locate the `mingi-miles-study` clone and read its `AGENTS.md`.
+1. Run the sync check above, then locate the `mingi-miles-study` clone and
+   read its `AGENTS.md`.
 2. Run `scripts/learn status` before writing.
 3. Report existing changes and preserve them.
 4. Read `maps/progress.md` when present, then verify it against recent relevant
