@@ -1,7 +1,7 @@
 ---
 id: progress-current-agent-run-observer
 created: 2026-07-29
-updated: 2026-08-03
+updated: 2026-08-05
 status: active
 tags: [go, project-based-learning, ai-agents, helm, kubernetes]
 source: repository-evidence
@@ -97,6 +97,30 @@ track to continue past orientation, the next smallest unit is writing one
 minimal chart by hand and rendering it with `helm template`, since that
 separates the templating job from the release job in a single observable step.
 
+## Side track: mail server fundamentals
+
+A third, small track opened on 2026-08-05 at Miles's request: what a mail
+server is, contrasted with a web application he already understands (Gmail),
+and whether email has a standardized spec the way HTTP does.
+
+Verified activity: `topics/mail-server-fundamentals.md` was written from the
+IETF RFCs for SMTP (5321), Internet Message Format (5322), POP3 (1939), and
+IMAP4rev1/rev2 (3501, 9051), verified against datatracker.ietf.org before
+writing. Its recall check has been posed and no answer is recorded.
+
+Mastery state: `learning`. No assignment, assessment, or artifact exists for
+this track yet.
+
+Stopped at: the recall check in that topic, asking which retrieval protocol
+(POP3 vs IMAP) explains a read-state-not-syncing-across-devices symptom, and
+why.
+
+Next action for this track: Miles answers the recall check in conversation.
+If he wants the track to continue past orientation, the next smallest unit is
+tracing envelope vs. header manually — e.g. reading raw SMTP transaction logs
+or a message's full headers to find `Return-Path` vs `From:` and see the
+envelope/header split from the topic file in real data.
+
 ## Supporting repository paths
 
 - Helm orientation topic: `topics/helm-charts-purpose-and-role.md`
@@ -110,3 +134,4 @@ separates the templating job from the release job in a single observable step.
 - Fixture guide: `projects/agent-run-observer/fixtures/synthetic/README.md`
 - Concept explanation: `topics/go-type-ownership-at-package-boundaries.md`
 - Project index: `projects/README.md`
+- Mail server orientation topic: `topics/mail-server-fundamentals.md`
